@@ -1,11 +1,13 @@
 from pandas import DataFrame #pretty print result 2d-array
+#import numpy as np # overkill
 
-gap_cost = -1
-score_matrix = [[2, 0, 0, 0], # A
-                [0, 2, 0, 0], # C
-                [0, 0, 2, 0], # G
-                [0, 0, 0, 2]] # T
-               # A  C  G  T
+# Author: Carl M. Kobel 2018
+
+#   ~ todo ~
+# * backtracking with multiple results (recursively?) (doable manually..)
+# * linear gap cost (not affine!) 
+# * cli?
+# * optimization?
 
 
 def encode(input):
@@ -21,47 +23,62 @@ def decode(input):
                          .replace('3', 'T') for i in input)
 
 
-A = encode('aggt'.upper())
-B = encode('acta'.upper())
-print(decode(A))
+# Constants
+A = encode('CGTGTCAAGTCT'.upper())
+B = encode('ACGTCGTAGCTAGG'.upper())
+gap_cost = -5
 result = [[None for i in range(len(B) + 1)]\
-             for i in range(len(A) + 1)]
+                for i in range(len(A) + 1)]
+
+# vector = [[None for i in range(len(B) + 1)]\
+#                 for i in range(len(A) + 1)]
+
+score_matrix = [[10,  2,  5,  2], # A
+                [ 2, 10,  2,  5], # C
+                [ 5,  2, 10,  2], # G
+                [ 2,  5,  2, 10]] # T
+               #  A   C   G   T
 
 
+# Helper methods
 def drop_None(input):
     return [i for i in input if i != None]
 
 def dyn_score(i, j):
-    print(f'{i, j}\t', end = '')
+    #print(f'{i},{j}  ', end = '')
 
     # Has it already been calculated?
     if result[i][j] != None:
         return result[i][j]
 
-    # if not, calculate it.
+    # if not, calculate it..
     else:
-        v1 = v2 = v3 = v4 = None #?
+        v0 = v1 = v2 = v3 = None #?
 
         if (i > 0) and (j > 0): # Diagonally
-            v1 = dyn_score(i-1, j-1) + score_matrix[A[i-1]][B[j-1]] #?
-        if (i > 0) and (j >= 0): # Horizontally
-            v2 = dyn_score(i-1, j) + gap_cost
-        if (i >= 0) and (j > 0): # Vertically
-            v3 = dyn_score(i, j-1) + gap_cost
-        if (i == 0) and (j == 0): # base case
-            v4 = 0
+            v0 = dyn_score(i-1, j-1) + score_matrix[A[i-1]][B[j-1]] #?
+        if (i > 0) and (j >= 0): # Left
+            v1 = dyn_score(i-1, j) + gap_cost
+        if (i >= 0) and (j > 0): # Up
+            v2 = dyn_score(i, j-1) + gap_cost
+        if (i == 0) and (j == 0): # Base case
+            v3 = 0
 
-        result[i][j] = max(drop_None([v1, v2, v3, v4]))
+        candidates = [v0, v1, v2, v3]
+        result[i][j] = max(drop_None(candidates))
+        #vector[i][j] = candidates.index(result[i][j])
         return result[i][j]
 
+
+# Pretty print everything
 print(f'''\
 
 
-input:
-A |  ({decode(A)}) {A} 
-B -  ({decode(B)}) {B}
+input ({len(A)}x{len(B)})
+A ({decode(A)}) vertically
+B ({decode(B)}) horizontally
 
-score: {dyn_score(len(A), len(B))}
-
+score ({dyn_score(len(A), len(B))})
 {DataFrame(result)}
+
 ''')
