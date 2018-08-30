@@ -6,6 +6,7 @@ score_matrix = [[1, 0, 0, 0], # a
                # a  c  t  g 
 
 
+
 def encode(input):
     return [int(i.replace('a', '0')\
                  .replace('c', '1')\
@@ -13,8 +14,10 @@ def encode(input):
                  .replace('g', '3')) for i in input]
 
 
-A = encode('acgatgat')
-B = encode('acgatgac')
+A = encode('acgatga')
+B = encode('acgatga')
+
+
 
 
 def score(i, j):
