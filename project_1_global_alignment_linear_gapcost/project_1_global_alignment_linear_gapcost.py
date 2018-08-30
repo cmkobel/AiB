@@ -15,27 +15,24 @@ def encode(input):
                  .replace('T', '3')) for i in input]
 
 def decode(input):
-    return ''.join(str(input).replace('0', 'A')\
-                             .replace('1', 'C')\
-                             .replace('2', 'G')\
-                             .replace('3', 'T')) # join gør intet
+    return ''.join(str(i).replace('0', 'A')\
+                         .replace('1', 'C')\
+                         .replace('2', 'G')\
+                         .replace('3', 'T') for i in input)
 
 
-A = encode('A'.upper())
-B = encode('A'.upper())
-
+A = encode('aggt'.upper())
+B = encode('acta'.upper())
+print(decode(A))
 result = [[None for i in range(len(B) + 1)]\
              for i in range(len(A) + 1)]
 
-def c_max(list, drop_None = True):
-    rv = list[0]
-    for i in list[1:]:
-        if i != None:
-            if i > rv: rv = i
-    return rv
+
+def drop_None(input):
+    return [i for i in input if i != None]
 
 def dyn_score(i, j):
-    print(f'i, j = {i}, {j}')
+    print(f'{i, j}\t', end = '')
 
     # Has it already been calculated?
     if result[i][j] != None:
@@ -43,7 +40,7 @@ def dyn_score(i, j):
 
     # if not, calculate it.
     else:
-        v1 = v2 = v3 = v4 = -1000 #?
+        v1 = v2 = v3 = v4 = None #?
 
         if (i > 0) and (j > 0): # Diagonally
             v1 = dyn_score(i-1, j-1) + score_matrix[A[i-1]][B[j-1]] #?
@@ -54,20 +51,17 @@ def dyn_score(i, j):
         if (i == 0) and (j == 0): # base case
             v4 = 0
 
-        result[i][j] = c_max([v1, v2, v3, v4])
+        result[i][j] = max(drop_None([v1, v2, v3, v4]))
         return result[i][j]
 
 print(f'''\
+
+
 input:
-A:  {A} ({decode(B)})
-B:  {B}
+A |  ({decode(A)}) {A} 
+B -  ({decode(B)}) {B}
 
 score: {dyn_score(len(A), len(B))}
 
 {DataFrame(result)}
 ''')
-
-
-
-         
-
