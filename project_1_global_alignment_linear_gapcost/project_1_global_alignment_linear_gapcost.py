@@ -14,7 +14,7 @@ import pandas #pretty print result 2d-array # too slow
 class Pairwise_alignment:
     '''with linear gap cost'''
 
-    def __init__(self, A, B):
+    def __init__(self, B, A):
         
         # Constants
         self.A = self.encode(A)
@@ -88,7 +88,7 @@ class Pairwise_alignment:
               f'{pandas.DataFrame(self.result)}\n')
 
 
-    def backtrack(self):
+    def backtrack(self, method):
 
         def rec_backtrack(i, j):
             """ Recursive backtrack. """
@@ -110,15 +110,41 @@ class Pairwise_alignment:
             elif i == 0 and j == 0:
                 return '', ''
 
+        if method == 'single':
+            print('\n\nSingle Solution')
+            backtracked_A, backtracked_B = rec_backtrack(len(self.A), len(self.B))
+            print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
 
-        backtracked_A, backtracked_B = rec_backtrack(len(self.A), len(self.B))
-        print('\nSolution')
-        print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
+        pri_list = []
 
+        def rec_backtrack_mh(i, j, string_A, string_B):
+            """ Recursive backtrack. 
+                multiple, heavy stack"""
+
+
+            #print(i, j, sep = ',', end = ' ')
+            sec_list = []
+
+            if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
+                rec_backtrack_mh(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
+
+            if i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
+                rec_backtrack_mh(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
+
+            if i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
+                rec_backtrack_mh(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
+
+            if i == 0 and j == 0:
+                pri_list.append((self.decode(string_A[::-1]), self.decode(string_B[::-1])))
+
+        if method == 'multiple':
+            print('\n\nMultiple Solutions')
+            rec_backtrack_mh(len(self.A), len(self.B), '','')
+            print(pri_list)
 
 
 o = Pairwise_alignment('CGTGTCAAGTCT', 'ACGTCGTAGCTAGG')
 
 o.compute()
 
-o.backtrack()
+o.backtrack('multiple')
