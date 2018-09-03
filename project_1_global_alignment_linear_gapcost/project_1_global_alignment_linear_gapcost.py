@@ -20,13 +20,11 @@ class Pairwise_alignment:
         self.A = self.encode(A)
         self.B = self.encode(B)
 
-        self.gap_cost = -5
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
-
-        # vector = [[None for i in range(len(B) + 1)]\
-        #                 for i in range(len(A) + 1)]
-
+        
+        self.gap_cost = -5
+        
         self.score_matrix = [[10,  2,  5,  2], # A
                              [ 2, 10,  2,  5], # C
                              [ 5,  2, 10,  2], # G
@@ -45,16 +43,6 @@ class Pairwise_alignment:
         return ''.join([demapping[str(i)] for i in input])
 
 
-    def drop_None(self, input):
-        return [i for i in input if i != None]
-        # use enumerate instead?
-
-
-    def idx_of_max(self, input):
-        ''' Get indices of the maximum values in the input list '''
-        return [index for (index, value) in enumerate(input) if value == max(input)]
-
-
     # Core methods
     def dyn_score(self, i, j):
         #print(f'{i},{j}  ', end = '') # debug
@@ -67,18 +55,25 @@ class Pairwise_alignment:
         else:
             v0 = v1 = v2 = v3 = None #?
 
-            if (i > 0) and (j > 0): # Diagonally
-                v0 = self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]] #?
-            if (i > 0) and (j >= 0): # Left
-                v1 = self.dyn_score(i-1, j) + self.gap_cost
-            if (i >= 0) and (j > 0): # Up
-                v2 = self.dyn_score(i, j-1) + self.gap_cost
-            if (i == 0) and (j == 0): # Base case
-                v3 = 0
+            new_cand = []
 
-            candidates = [v0, v1, v2, v3]
-            self.result[i][j] = max(self.drop_None(candidates))
-            #vector[i][j] = candidates.index(result[i][j])
+            if (i > 0) and (j > 0): # Diagonally
+                #v0 = self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]] #?
+                new_cand.append(self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]]) #?)
+            if (i > 0) and (j >= 0): # Left
+                #v1 = self.dyn_score(i-1, j) + self.gap_cost
+                new_cand.append(self.dyn_score(i-1, j) + self.gap_cost)
+            if (i >= 0) and (j > 0): # Up
+                #v2 = self.dyn_score(i, j-1) + self.gap_cost
+                new_cand.append(self.dyn_score(i, j-1) + self.gap_cost)
+            if (i == 0) and (j == 0): # Base case
+                new_cand.append(0)
+
+            #candidates = [v0, v1, v2, v3]
+            #print('cand', new_cand)
+            #self.result[i][j] = max(self.drop_None(candidates)) # slettes
+            #self.result[i][j] = max([i for i in candidates if i != None])
+            self.result[i][j] = max(new_cand)
             return self.result[i][j]
 
     def compute(self):
@@ -96,12 +91,9 @@ class Pairwise_alignment:
     def backtrack(self):
 
         def rec_backtrack(i, j):
-            """
-            Recursive backtrack.
+            """ Recursive backtrack. """
 
-            """
-
-            print('i,j', i, j)
+            print(i, j, sep = ',', end = ' ')
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
                 string_a, string_b = rec_backtrack(i - 1, j - 1)
@@ -119,12 +111,9 @@ class Pairwise_alignment:
                 return '', ''
 
 
-
-        backtrackedA, backtrackedB = rec_backtrack(len(self.A), len(self.B))
+        backtracked_A, backtracked_B = rec_backtrack(len(self.A), len(self.B))
         print('\nSolution')
-        print(f'{self.decode(backtrackedB)}\n{self.decode(backtrackedA)}')
-
-
+        print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
 
 
 
