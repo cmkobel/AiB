@@ -17,8 +17,8 @@ class Pairwise_alignment:
     def __init__(self, A, B):
         
         # Constants
-        self.A = self.encode(A.upper())
-        self.B = self.encode(B.upper())
+        self.A = self.encode(A)
+        self.B = self.encode(B)
 
         self.gap_cost = -5
         self.result = [[None for i in range(len(self.B) + 1)]\
@@ -36,16 +36,13 @@ class Pairwise_alignment:
     # Helper methods
 
     def encode(self, input):
-        return [int(i.replace('A', '0')\
-                     .replace('C', '1')\
-                     .replace('G', '2')\
-                     .replace('T', '3')) for i in input]
+        mapping = {'A': 0, 'C': 1, 'G': 2, 'T':3}
+        return [mapping[i] for i in str(input).upper()]
+
 
     def decode(self, input):
-        return ''.join(str(i).replace('0', 'A')\
-                             .replace('1', 'C')\
-                             .replace('2', 'G')\
-                             .replace('3', 'T') for i in input)
+        demapping = {'0': 'A', '1': 'C', '2': 'G', '3': 'T', '-': '-'}
+        return ''.join([demapping[str(i)] for i in input])
 
 
     def drop_None(self, input):
@@ -58,9 +55,7 @@ class Pairwise_alignment:
         return [index for (index, value) in enumerate(input) if value == max(input)]
 
 
-    # core methods
-    
-
+    # Core methods
     def dyn_score(self, i, j):
         #print(f'{i},{j}  ', end = '') # debug
 
@@ -88,47 +83,52 @@ class Pairwise_alignment:
 
     def compute(self):
         # Pretty print everything
-        print(f'''\
-input ({len(self.A)}x{len(self.B)})
-A ({self.decode(self.A)}) vertically
-B ({self.decode(self.B)}) horizontally
+        print(f'\\n'
+              f'input ({len(self.A)}x{len(self.B)})\n'
+              #f'A:{self.A}'
+              f'A ({self.decode(self.A)}) vertically\n'
+              f'B ({self.decode(self.B)}) horizontally\n'
+              f'\n'
+              f'score ({self.dyn_score(len(self.A), len(self.B))})\n'
+              f'{pandas.DataFrame(self.result)}\n')
 
-score ({self.dyn_score(len(self.A), len(self.B))})
-{pandas.DataFrame(self.result)}
-''')
 
     def backtrack(self):
 
+        def rec_backtrack(i, j):
+            """
+            Recursive backtrack.
 
-        def rec_backtrack(i, j, track = []):
-            ''' Recursive backtrack.
-            * Add option to save aligned string instead of track '''
+            """
 
-            track.append((i,j))
-            #print('i, j:', i, j)
+            print('i,j', i, j)
 
+            if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
+                string_a, string_b = rec_backtrack(i - 1, j - 1)
+                return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
 
-            candidates = []
+            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
+                string_a, string_b = rec_backtrack(i - 1, j)
+                return string_a + str(self.A[i - 1]), string_b + '-'
 
-            if i > 0 and j > 0: 
-                candidates.append(self.result[i-1][j-1]) # diagonal
-            if i > 0 and j >= 0:
-                candidates.append(self.result[i-1][j]) # up
-            if i >= 0 and j > 0:
-                candidates.append(self.result[i][j-1]) # left
-            else: #
-                print(f'solution: {track}') # base case
+            elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
+                string_a, string_b = rec_backtrack(i, j - 1)
+                return string_a + '-', string_b + str(self.B[j-1])
 
-            for candidate in self.idx_of_max(candidates): #"lc later"
-                print(f'pos {(i, j)}, candidate {candidate} of {self.idx_of_max(candidates)}')
-                possibilities = [(i-1, j-1), (i-1, j), (i, j-1)]
-                rec_backtrack(possibilities[candidate][0], possibilities[candidate][1], track)
-                    
-        #i, j = len(self.A), len(self.B) # Starting pointers, start in the bottom right corner
-        rec_backtrack(len(self.A), len(self.B))
+            elif i == 0 and j == 0:
+                return '', ''
 
 
-o = Pairwise_alignment('TCCAGAGA', 'TCGAT')
+
+        backtrackedA, backtrackedB = rec_backtrack(len(self.A), len(self.B))
+        print('\nSolution')
+        print(f'{self.decode(backtrackedB)}\n{self.decode(backtrackedA)}')
+
+
+
+
+
+o = Pairwise_alignment('CGTGTCAAGTCT', 'ACGTCGTAGCTAGG')
 
 o.compute()
 
