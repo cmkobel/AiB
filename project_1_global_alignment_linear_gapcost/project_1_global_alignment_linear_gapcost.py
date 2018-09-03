@@ -5,10 +5,9 @@ import pandas #pretty print result 2d-array # too slow
 # Author: Carl M. Kobel 2018
 
 #   ~ todo ~
-# * backtracking with multiple results (recursively?) (doable manually..)
 # * linear gap cost (not affine!) 
 # * cli?
-# * optimization?
+# * optimization? (at least the stack is too big in multiple backtracking)
 
 
 class Pairwise_alignment:
@@ -55,25 +54,18 @@ class Pairwise_alignment:
         else:
             v0 = v1 = v2 = v3 = None #?
 
-            new_cand = []
+            candidates = []
 
             if (i > 0) and (j > 0): # Diagonally
-                #v0 = self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]] #?
-                new_cand.append(self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]]) #?)
+                candidates.append(self.dyn_score(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]]) #?)
             if (i > 0) and (j >= 0): # Left
-                #v1 = self.dyn_score(i-1, j) + self.gap_cost
-                new_cand.append(self.dyn_score(i-1, j) + self.gap_cost)
+                candidates.append(self.dyn_score(i-1, j) + self.gap_cost)
             if (i >= 0) and (j > 0): # Up
-                #v2 = self.dyn_score(i, j-1) + self.gap_cost
-                new_cand.append(self.dyn_score(i, j-1) + self.gap_cost)
+                candidates.append(self.dyn_score(i, j-1) + self.gap_cost)
             if (i == 0) and (j == 0): # Base case
-                new_cand.append(0)
+                candidates.append(0) # ?
 
-            #candidates = [v0, v1, v2, v3]
-            #print('cand', new_cand)
-            #self.result[i][j] = max(self.drop_None(candidates)) # slettes
-            #self.result[i][j] = max([i for i in candidates if i != None])
-            self.result[i][j] = max(new_cand)
+            self.result[i][j] = max(candidates)
             return self.result[i][j]
 
     def compute(self):
@@ -93,7 +85,7 @@ class Pairwise_alignment:
         def rec_backtrack(i, j):
             """ Recursive backtrack. """
 
-            print(i, j, sep = ',', end = ' ')
+            #print(i, j, sep = ',', end = ' ')
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
                 string_a, string_b = rec_backtrack(i - 1, j - 1)
@@ -111,7 +103,7 @@ class Pairwise_alignment:
                 return '', ''
 
         if method == 'single':
-            print('\n\nSingle Solution')
+            print('\n\nSingle solution:')
             backtracked_A, backtracked_B = rec_backtrack(len(self.A), len(self.B))
             print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
 
@@ -121,9 +113,8 @@ class Pairwise_alignment:
             """ Recursive backtrack. 
                 multiple, heavy stack"""
 
-
             #print(i, j, sep = ',', end = ' ')
-            sec_list = []
+            
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
                 rec_backtrack_mh(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
@@ -138,7 +129,7 @@ class Pairwise_alignment:
                 pri_list.append((self.decode(string_A[::-1]), self.decode(string_B[::-1])))
 
         if method == 'multiple':
-            print('\n\nMultiple Solutions')
+            print('\n\nMultiple solutions:')
             rec_backtrack_mh(len(self.A), len(self.B), '','')
             print(pri_list)
 
