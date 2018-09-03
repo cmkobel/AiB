@@ -86,7 +86,7 @@ class Pairwise_alignment:
             #vector[i][j] = candidates.index(result[i][j])
             return self.result[i][j]
 
-    def complete(self):
+    def compute(self):
         # Pretty print everything
         print(f'''\
 input ({len(self.A)}x{len(self.B)})
@@ -100,12 +100,12 @@ score ({self.dyn_score(len(self.A), len(self.B))})
     def backtrack(self):
 
 
-        def rec_backtrack(track, i, j):
+        def rec_backtrack(i, j, track = []):
             ''' Recursive backtrack.
             * Add option to save aligned string instead of track '''
 
-            track[i+j] = (i, j) # enter newly found position into track
-            print('i, j:', i, j)
+            track.append((i,j))
+            #print('i, j:', i, j)
 
 
             candidates = []
@@ -117,23 +117,19 @@ score ({self.dyn_score(len(self.A), len(self.B))})
             if i >= 0 and j > 0:
                 candidates.append(self.result[i][j-1]) # left
             else: #
-                print(track) # base case
+                print(f'solution: {track}') # base case
 
             for candidate in self.idx_of_max(candidates): #"lc later"
-                print('candidates (list, idx):', candidates, candidate)
+                print(f'pos {(i, j)}, candidate {candidate} of {self.idx_of_max(candidates)}')
                 possibilities = [(i-1, j-1), (i-1, j), (i, j-1)]
-                print('possibilities', possibilities[candidate])
-                rec_backtrack(track, possibilities[candidate][0], possibilities[candidate][1])
+                rec_backtrack(possibilities[candidate][0], possibilities[candidate][1], track)
                     
-             
-        empty_track = [None for i in range(len(self.A) + len(self.B) + 1)] # An empty list with the length of the track
-        i, j = len(self.A), len(self.B) # Starting pointers, start in the bottom right corner
-        
-        rec_backtrack(empty_track, i, j)
+        #i, j = len(self.A), len(self.B) # Starting pointers, start in the bottom right corner
+        rec_backtrack(len(self.A), len(self.B))
 
 
-o = Pairwise_alignment('ACG', 'CGTG')
+o = Pairwise_alignment('TCCAGAGA', 'TCGAT')
 
-o.complete()
+o.compute()
 
 o.backtrack()
