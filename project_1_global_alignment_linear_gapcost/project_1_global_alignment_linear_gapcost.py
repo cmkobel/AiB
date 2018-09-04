@@ -1,11 +1,10 @@
-import pandas #pretty print result 2d-array # too slow
+import pandas #pretty print result 2d-array # too slow?
 #import json
 #import numpy as np # overkill
 
 # Author: Carl M. Kobel 2018
 
 #   ~ todo ~
-# * linear gap cost (not affine!) 
 # * cli?
 # * optimization? (at least the stack is too big in multiple backtracking)
 
@@ -21,6 +20,8 @@ class Pairwise_alignment:
 
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
+        print(pandas.DataFrame(self.result))
+
         
         self.gap_cost = -5
         
@@ -43,6 +44,7 @@ class Pairwise_alignment:
 
 
     # Core methods
+    
     def dyn_score(self, i, j):
         #print(f'{i},{j}  ', end = '') # debug
 
@@ -52,8 +54,6 @@ class Pairwise_alignment:
 
         # if not, calculate it..
         else:
-            v0 = v1 = v2 = v3 = None #?
-
             candidates = []
 
             if (i > 0) and (j > 0): # Diagonally
@@ -80,62 +80,61 @@ class Pairwise_alignment:
               f'{pandas.DataFrame(self.result)}\n')
 
 
-    def backtrack(self, method):
+    def backtrack(self, method = 'single'):
 
-        def rec_backtrack(i, j):
+        def rec_backtrack_single(i, j):
             """ Recursive backtrack. """
 
             #print(i, j, sep = ',', end = ' ')
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                string_a, string_b = rec_backtrack(i - 1, j - 1)
+                string_a, string_b = rec_backtrack_single(i - 1, j - 1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
 
             elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
-                string_a, string_b = rec_backtrack(i - 1, j)
+                string_a, string_b = rec_backtrack_single(i - 1, j)
                 return string_a + str(self.A[i - 1]), string_b + '-'
 
             elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
-                string_a, string_b = rec_backtrack(i, j - 1)
+                string_a, string_b = rec_backtrack_single(i, j - 1)
                 return string_a + '-', string_b + str(self.B[j-1])
 
             elif i == 0 and j == 0:
                 return '', ''
 
-        if method == 'single':
-            print('\n\nSingle solution:')
-            backtracked_A, backtracked_B = rec_backtrack(len(self.A), len(self.B))
-            print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
-
-        pri_list = []
-
-        def rec_backtrack_mh(i, j, string_A, string_B):
+        pri_list = [] # faster than returning?
+        def rec_backtrack_multiple(i, j, string_A, string_B):
             """ Recursive backtrack. 
                 multiple, heavy stack"""
 
             #print(i, j, sep = ',', end = ' ')
-            
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                rec_backtrack_mh(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
+                rec_backtrack_multiple(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
 
             if i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
-                rec_backtrack_mh(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
+                rec_backtrack_multiple(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
 
             if i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
-                rec_backtrack_mh(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
+                rec_backtrack_multiple(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
 
             if i == 0 and j == 0:
                 pri_list.append((self.decode(string_A[::-1]), self.decode(string_B[::-1])))
 
+
+        if method == 'single':
+            print('\n\nSingle solution:')
+            backtracked_A, backtracked_B = rec_backtrack_single(len(self.A), len(self.B))
+            print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
+
         if method == 'multiple':
             print('\n\nMultiple solutions:')
-            rec_backtrack_mh(len(self.A), len(self.B), '','')
-            print(pri_list)
+            rec_backtrack_multiple(len(self.A), len(self.B), '','') 
+            print(pri_list) # not exactly a nice way to print it..
 
 
 o = Pairwise_alignment('CGTGTCAAGTCT', 'ACGTCGTAGCTAGG')
 
 o.compute()
 
-o.backtrack('multiple')
+o.backtrack('single') # single | multiple
