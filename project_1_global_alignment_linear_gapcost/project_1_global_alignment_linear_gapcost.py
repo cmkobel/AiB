@@ -1,4 +1,5 @@
-#import pandas #pretty print result 2d-array # too slow?
+# back to tidy up
+import pandas #pretty print result 2d-array # too slow?
 #import json
 #import numpy as np # overkill
 
@@ -9,7 +10,7 @@
 # * optimization? (at least the stack is too big in multiple backtracking)
 
 
-class global_linear:
+class Pairwise_alignment:
     '''with linear gap cost'''
 
     def __init__(self, B, A):
@@ -34,7 +35,7 @@ class global_linear:
     # Helper methods
 
     def encode(self, input):
-        mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+        mapping = {'A': 0, 'C': 1, 'G': 2, 'T':3}
         return [mapping[i] for i in str(input).upper()]
 
 
@@ -133,50 +134,8 @@ class global_linear:
             print(pri_list) # not exactly a nice way to print it..
 
 
-#o = Pairwise_alignment('GGCCTAAAGGCGCCGGTCTTTCGTACCCCAAAATCTCGGCATTTTAAGATAAGTGAGTGTTGCGTTACACTAGCGATCTACCGCGTCTTATACTTAAGCGTATGCCCAGATCTGACTAATCGTGCCCCCGGATTAGACGGGCTTGATGGGAAAGAACAGCTCGTCTGTTTACGTATAAACAGAATCGCCTGGGTTCGC',\
-#                       'GGGCTAAAGGTTAGGGTCTTTCACACTAAAGAGTGGTGCGTATCGTGGCTAATGTACCGCTTCTGGTATCGTGGCTTACGGCCAGACCTACAAGTACTAGACCTGAGAACTAATCTTGTCGAGCCTTCCATTGAGGGTAATGGGAGAGAACATCGAGTCAGAAGTTATTCTTGTTTACGTAGAATCGCCTGGGTCCGC')
+o = Pairwise_alignment('CGTGTCAAGTCT', 'ACGTCGTAGCTAGG')
 
-# o = global_linear('AATAAT', 'AAGG')
+o.compute()
 
-# o.compute()
-
-# o.backtrack('multiple') # single | multiple
-
-
-class Phylip_like_parser:
-    def __init__(self, file_name):
-        
-        def parse(input_file):
-            with open(input_file, 'r') as file:
-                raw = [line.strip().split() for line in file]
-                rv = {'alphabet_len': raw[0],
-                      'alphabet': [i[0] for i in raw[1:]],
-                      'score_matrix': [i[1:] for i in raw[1:]]}
-            return rv
-
-
-        self.file_name = file_name
-        self.data = parse(self.file_name)
-
-
-    def encode(self, alphabet, input):
-    mapping = {key: num for num, key in enumerate(alphabet)}
-    return [mapping[i] for i in str(input).upper()]
-
-
-    def decode(self, alphabet, input, join = False):
-        demapping = {num: key for num, key in enumerate(alphabet)}
-        if join:
-            return ''.join([demapping[i] for i in input])
-        else:
-            return [demapping[i] for i in input]
-
-
-
-
-
-
-
-read = Phylip_like_parser('score_matrix.phylip-like')
-print(read.data)
-
+o.backtrack('single') # single | multiple
