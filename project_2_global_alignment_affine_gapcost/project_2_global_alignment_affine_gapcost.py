@@ -11,7 +11,7 @@ import pandas #pretty print result 2d-array # too slow?
 # 1. Mandatory
 class Global_Alignment:
     '''with linear gap cost'''
-    def __init__(self, file_name, B, A, a, b = 0): # b is zero for linear gapcost
+    def __init__(self, phylip_file, fasta_file,a, b = 0): # b is zero for linear gapcost
         def phylip_like_parser(input_file):
             with open(input_file, 'r') as file:
                 raw = [line.strip().split() for line in file]
@@ -20,18 +20,25 @@ class Global_Alignment:
                       'score_matrix': [[int(elem) for elem in list[1:]] for list in raw[1:]]}
             return rv['alphabet'], rv['score_matrix']
 
-        # Start out by parsing the phylip-like file, to get a score_matrix
-        self.file_name = file_name
+        def get_sequences(input_file):
+            fasta_seqs = SeqIO.parse(input_file,'fasta')
+            try:
+                seqa, seqb = (str(i.seq) for i in fasta_seqs)
+            except ValueError:
+                print(f'{input_file} must contain exactly two sequences')
+            return(seqa, seqb)
+
 
         # ax + b:
         self.b = b
         self.a = a
         
-        self.alphabet, self.score_matrix = phylip_like_parser(self.file_name)
+        # Start out by parsing the phylip-like file, to get a score_matrix
+        self.alphabet, self.score_matrix = phylip_like_parser(phylip_file)
         
         # Constants
         self.A = self.encode(A)
-        self.B = self.encode(B)
+        self.B = self.encode(B) # hvoradn
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
         self.vector = [[None for i in range(len(self.B) + 1)]\
@@ -55,6 +62,7 @@ class Global_Alignment:
             return ''.join([demapping[i] for i in input])
         else:
             return [demapping[i] for i in input]
+
 
 
     # Core methods
@@ -113,15 +121,21 @@ class Global_Alignment:
 
 
 
-    def compute(self):
+    def compute(self, method = 'linear'):
+        if method == 'linear':
+            score = self.dyn_linear(len(self.A), len(self.B))
+        elif method == 'affine':
+            score = self.dyn_affine(len(self.A), len(self.B))[0]
         # Pretty print everything
         print(f'''\n
 input ({len(self.A)}x{len(self.B)})
 A ({self.decode(self.A)}) vertically
 B ({self.decode(self.B)}) horizontally
 
-result ({self.dyn_affine(len(self.A), len(self.B))})
+
+result
 {pandas.DataFrame(self.result)}
+best alignment = {score}
 
 vector
 {pandas.DataFrame(self.vector)}''')
@@ -190,5 +204,5 @@ o = Global_Alignment('score_matrix.phylip-like',
                      a = 5,
                      b = 5)
 
-o.compute() # linear | affine
+o.compute('affine') # linear | affine
 o.backtrack('multiple') # single | multiple
