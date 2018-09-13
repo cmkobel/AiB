@@ -1,6 +1,5 @@
 import pandas #pretty print result 2d-array # too slow?
 #import json
-#import numpy as np # overkill
 
 # Author: Carl M. Kobel 2018
 
