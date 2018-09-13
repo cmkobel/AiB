@@ -1,4 +1,5 @@
 import pandas #pretty print result 2d-array # too slow?
+from Bio import SeqIO
 #import json
 
 # Author: Carl M. Kobel 2018
@@ -9,8 +10,7 @@ import pandas #pretty print result 2d-array # too slow?
 
 # 1. Mandatory
 class Global_Alignment:
-    '''with linear gap cost'''
-    def __init__(self, phylip_file, fasta_file,a, b = 0): # b is zero for linear gapcost
+    def __init__(self, phylip_file, fasta_file, gapcost_type, backtrack_type, a, b = 0): # b is zero for linear gapcost
         def phylip_like_parser(input_file):
             with open(input_file, 'r') as file:
                 raw = [line.strip().split() for line in file]
@@ -27,41 +27,36 @@ class Global_Alignment:
                 print(f'{input_file} must contain exactly two sequences')
             return(seqa, seqb)
 
-
-        # ax + b:
         self.b = b
         self.a = a
-        
-        # Start out by parsing the phylip-like file, to get a score_matrix
         self.alphabet, self.score_matrix = phylip_like_parser(phylip_file)
-        
-        # Constants
-        self.A = self.encode(A)
-        self.B = self.encode(B) # hvoradn
+        self.A, self.B = (self.encode(i) for i in get_sequences(fasta_file))
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
         self.vector = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
 
+        self.compute(gapcost_type)
+
+
 
     # Helper methods
-    def encode(self, input):
-        mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
-        return [mapping[i] for i in str(input).upper()]
-    def decode(self, input):
-        demapping = {'0': 'A', '1': 'C', '2': 'G', '3': 'T', '-': '-'}
-        return ''.join([demapping[str(i)] for i in input])
+#    def oencode(self, input):
+#        mapping = {'A': 0, 'C': 1, 'G': 2, 'T': 3}
+#        return [mapping[i] for i in str(input).upper()]
+#    def odecode(self, input):
+#        demapping = {'0': 'A', '1': 'C', '2': 'G', '3': 'T', '-': '-'}
+#        return ''.join([demapping[str(i)] for i in input])
 
-    def nencode(self, alphabet, input):
-        mapping = {key: num for num, key in enumerate(alphabet)}
+    def encode(self, input):
+        mapping = {key: num for num, key in enumerate(self.alphabet)}
         return [mapping[i] for i in str(input).upper()]
-    def ndecode(self, alphabet, input, join = False):
-        demapping = {num: key for num, key in enumerate(alphabet)}
+    def decode(self, input, join = False):
+        demapping = {num: key for num, key in enumerate(self.alphabet)}
         if join:
             return ''.join([demapping[i] for i in input])
         else:
             return [demapping[i] for i in input]
-
 
 
     # Core methods
@@ -128,8 +123,8 @@ class Global_Alignment:
         # Pretty print everything
         print(f'''\n
 input ({len(self.A)}x{len(self.B)})
-A ({self.decode(self.A)}) vertically
-B ({self.decode(self.B)}) horizontally
+A ({self.decode(self.A, join = True)}) vertically
+B ({self.decode(self.B, join = True)}) horizontally
 
 
 result
@@ -141,67 +136,66 @@ vector
 
 
 
-    def backtrack(self, method = 'single'):
+    def backtrack_linear(self, method = 'single'):
 
-        def rec_backtrack_single(i, j):
+        def single(i, j):
             """ Recursive backtrack. """
 
             #print(i, j, sep = ',', end = ' ')
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                string_a, string_b = rec_backtrack_single(i - 1, j - 1)
+                string_a, string_b = single(i - 1, j - 1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
             elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.a):
-                string_a, string_b = rec_backtrack_single(i - 1, j)
+                string_a, string_b = single(i - 1, j)
                 return string_a + str(self.A[i - 1]), string_b + '-'
             elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
-                string_a, string_b = rec_backtrack_single(i, j - 1)
+                string_a, string_b = single(i, j - 1)
                 return string_a + '-', string_b + str(self.B[j-1])
             elif i == 0 and j == 0:
                 return '', ''
 
 
         pri_list = [] # faster than returning?
-        def rec_backtrack_multiple(i, j, string_A, string_B):
+        def multiple(i, j, string_A, string_B):
             """ Recursive backtrack. 
                 multiple, heavy stack"""
 
             #print(i, j, sep = ',', end = ' ')
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                rec_backtrack_multiple(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
+                multiple(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
             if i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.a):
-                rec_backtrack_multiple(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
+                multiple(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
             if i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
-                rec_backtrack_multiple(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
+                multiple(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
             if i == 0 and j == 0:
-                pri_list.append((self.decode(string_A[::-1]), self.decode(string_B[::-1])))
+                pri_list.append((self.decode(string_A[::-1], join = True), self.decode(string_B[::-1], join = True)))
 
 
         if method == 'single':
             print('\n\nSingle solution:')
-            backtracked_A, backtracked_B = rec_backtrack_single(len(self.A), len(self.B))
+            backtracked_A, backtracked_B = single(len(self.A), len(self.B))
             print(f'{self.decode(backtracked_B)}\n{self.decode(backtracked_A)}')
 
         if method == 'multiple':
             print('\n\nMultiple solutions:')
-            rec_backtrack_multiple(len(self.A), len(self.B), '','') 
+            multiple(len(self.A), len(self.B), '','') 
             #print(pri_list) # not exactly a nice way to print it..
             for i, (j, k) in enumerate(pri_list):
                 print(f'{i}: (A)\t{j}\n{i}: (B)\t{k}\n')
 
 
-seq_0_A = 'CATGC'
-seq_0_B = 'ATGCC'
+    def backtrack_affine(self):
+        pass
 
-seq_1_A = 'acgtgtcaacgt'
-seq_1_B = 'acgtcgtagcta'
 
 o = Global_Alignment('score_matrix.phylip-like',
-                     seq_1_A,
-                     seq_1_B,
+                     'case2.fasta',
+                     gapcost_type = 'affine', # linear | affine
+                     backtrack_type = 'single', # none (default) | single | multiple
                      a = 5,
-                     b = 5)
+                     b = 5) # default: 0
 
-o.compute('affine') # linear | affine
-o.backtrack('multiple') # single | multiple
+# o.compute('affine') # linear | affine
+# o.backtrack('single') # single | multiple
