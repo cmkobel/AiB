@@ -80,7 +80,7 @@ class Global_Linear:
 
 
     def dyn_affine(self, i, j):
-        # max{M(i-1, j)-(a+b), I(i-1, j)-(a+b), D(i-1,j)-a}
+        # Glem definitionen og skriv noget der virker!
 
     	# Has it already been calculated?
         if self.result[i][j] != None:
