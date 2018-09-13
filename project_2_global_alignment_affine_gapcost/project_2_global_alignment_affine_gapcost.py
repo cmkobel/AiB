@@ -1,7 +1,3 @@
-# File split from project_1
-# As mega is not done with the transfer of files, the git repo does not exist on the Trash machine yet.
-# Thus, this file is to be used for the development of affine gc
-
 import pandas #pretty print result 2d-array # too slow?
 #import json
 #import numpy as np # overkill
@@ -13,9 +9,9 @@ import pandas #pretty print result 2d-array # too slow?
 # * optimization? (at least the stack is too big in multiple backtracking)
 
 # 1. Mandatory
-class Global_Linear:
+class Global_Alignment:
     '''with linear gap cost'''
-    def __init__(self, file_name, B, A, gap_cost):
+    def __init__(self, file_name, B, A, a, b = 0): # b is zero for linear gapcost
         def phylip_like_parser(input_file):
             with open(input_file, 'r') as file:
                 raw = [line.strip().split() for line in file]
@@ -26,13 +22,19 @@ class Global_Linear:
 
         # Start out by parsing the phylip-like file, to get a score_matrix
         self.file_name = file_name
-        self.gap_cost = gap_cost
+
+        # ax + b:
+        self.b = b
+        self.a = a
+        
         self.alphabet, self.score_matrix = phylip_like_parser(self.file_name)
         
         # Constants
         self.A = self.encode(A)
         self.B = self.encode(B)
         self.result = [[None for i in range(len(self.B) + 1)]\
+                       for i in range(len(self.A) + 1)]
+        self.vector = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
 
 
@@ -69,38 +71,61 @@ class Global_Linear:
             if (i > 0) and (j > 0): # Diagonally
                 candidates.append(self.dyn_linear(i-1, j-1) + self.score_matrix[self.A[i-1]][self.B[j-1]]) #?)
             if (i > 0) and (j >= 0): # Left
-                candidates.append(self.dyn_linear(i-1, j) + self.gap_cost)
+                candidates.append(self.dyn_linear(i-1, j) + self.a)
             if (i >= 0) and (j > 0): # Up
-                candidates.append(self.dyn_linear(i, j-1) + self.gap_cost)
+                candidates.append(self.dyn_linear(i, j-1) + self.a)
             if (i == 0) and (j == 0): # Base case
                 candidates.append(0) # ?
 
-            self.result[i][j] = max(candidates)
+            self.result[i][j] = min(candidates)
             return self.result[i][j]
 
 
-    def dyn_affine(self, i, j):
+    def dyn_affine(self, i, j): # g(x) = ax + b
         # Glem definitionen og skriv noget der virker!
 
     	# Has it already been calculated?
-        if self.result[i][j] != None:
-            return self.result[i][j]
-
-        # if not
+        if self.result[i][j] != None and self.vector[i][j] != None:
+            return self.result[i][j], self.vector[i][j]
+        
+        # if not, calculate it.
         else:
             candidates = []
+            if (i > 0) and (j > 0): # 0: Diagonally
+                candidates.append((self.dyn_affine(i-1, j-1)[0] + self.score_matrix[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost her
+            if (i > 0) and (j >= 0): #1:  up
+                if self.vector[i-1][j] == 1:
+                    candidates.append((self.dyn_affine(i-1, j)[0] + self.a, 1)) # continue gap
+                else:
+                    candidates.append( (self.dyn_affine(i-1, j)[0] + self.a + self.b, 1)) # start new gap
+
+            if (i >= 0) and (j > 0): #2: left
+                if self.vector[i][j-1] == 2:
+                    candidates.append((self.dyn_affine(i, j-1)[0] + self.a, 2))
+                else:
+                    candidates.append((self.dyn_affine(i, j-1)[0] + self.a + self.b, 2))
+            if (i == 0) and (j == 0): # Base case
+                candidates.append((0, 3)) # ?
+
+            self.result[i][j], self.vector[i][j] = min(candidates)
+
+            return self.result[i][j], self.vector[i][j]
+
 
 
     def compute(self):
         # Pretty print everything
-        print(f'\\n'
-              f'input ({len(self.A)}x{len(self.B)})\n'
-              #f'A:{self.A}'
-              f'A ({self.decode(self.A)}) vertically\n'
-              f'B ({self.decode(self.B)}) horizontally\n'
-              f'\n'
-              f'score ({self.dyn_linear(len(self.A), len(self.B))})\n'
-              f'{pandas.DataFrame(self.result)}\n')
+        print(f'''\n
+input ({len(self.A)}x{len(self.B)})
+A ({self.decode(self.A)}) vertically
+B ({self.decode(self.B)}) horizontally
+
+result ({self.dyn_affine(len(self.A), len(self.B))})
+{pandas.DataFrame(self.result)}
+
+vector
+{pandas.DataFrame(self.vector)}''')
+
 
 
     def backtrack(self, method = 'single'):
@@ -113,10 +138,10 @@ class Global_Linear:
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
                 string_a, string_b = rec_backtrack_single(i - 1, j - 1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
-            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
+            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.a):
                 string_a, string_b = rec_backtrack_single(i - 1, j)
                 return string_a + str(self.A[i - 1]), string_b + '-'
-            elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
+            elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
                 string_a, string_b = rec_backtrack_single(i, j - 1)
                 return string_a + '-', string_b + str(self.B[j-1])
             elif i == 0 and j == 0:
@@ -132,9 +157,9 @@ class Global_Linear:
 
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
                 rec_backtrack_multiple(i - 1, j - 1, string_A + str(self.A[i-1]), string_B + str(self.B[j-1]))
-            if i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.gap_cost):
+            if i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.a):
                 rec_backtrack_multiple(i - 1, j, string_A + str(self.A[i - 1]), string_B + '-')
-            if i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.gap_cost):
+            if i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
                 rec_backtrack_multiple(i, j - 1, string_A + '-', string_B + str(self.B[j-1]))
             if i == 0 and j == 0:
                 pri_list.append((self.decode(string_A[::-1]), self.decode(string_B[::-1])))
@@ -148,15 +173,22 @@ class Global_Linear:
         if method == 'multiple':
             print('\n\nMultiple solutions:')
             rec_backtrack_multiple(len(self.A), len(self.B), '','') 
-            print(pri_list) # not exactly a nice way to print it..
+            #print(pri_list) # not exactly a nice way to print it..
+            for i, (j, k) in enumerate(pri_list):
+                print(f'{i}: (A)\t{j}\n{i}: (B)\t{k}\n')
 
 
-seq_0_A = 'AATAAT'
-seq_0_B = 'AAGG'
+seq_0_A = 'CATGC'
+seq_0_B = 'ATGCC'
 
-seq_1_A = 'GGCCTAAAGGCGCCGGTCTTTCGTACCCCAAAATCTCGGCATTTTAAGATAAGTGAGTGTTGCGTTACACTAGCGATCTACCGCGTCTTATACTTAAGCGTATGCCCAGATCTGACTAATCGTGCCCCCGGATTAGACGGGCTTGATGGGAAAGAACAGCTCGTCTGTTTACGTATAAACAGAATCGCCTGGGTTCGC'
-seq_1_B = 'GGGCTAAAGGTTAGGGTCTTTCACACTAAAGAGTGGTGCGTATCGTGGCTAATGTACCGCTTCTGGTATCGTGGCTTACGGCCAGACCTACAAGTACTAGACCTGAGAACTAATCTTGTCGAGCCTTCCATTGAGGGTAATGGGAGAGAACATCGAGTCAGAAGTTATTCTTGTTTACGTAGAATCGCCTGGGTCCGC'
+seq_1_A = 'acgtgtcaacgt'
+seq_1_B = 'acgtcgtagcta'
 
-o = Global_Linear('score_matrix.phylip-like', seq_0_A, seq_0_B, gap_cost = -5)
-o.compute()
+o = Global_Alignment('score_matrix.phylip-like',
+                     seq_1_A,
+                     seq_1_B,
+                     a = 5,
+                     b = 5)
+
+o.compute() # linear | affine
 o.backtrack('multiple') # single | multiple
