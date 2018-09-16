@@ -4,6 +4,7 @@ from Bio import SeqIO
 
 # Author: Carl M. Kobel 2018
 
+
 #   ~ todo ~
 # * cli?
 # * optimization? (at least the stack is too big in multiple backtracking)
@@ -24,13 +25,13 @@ class Global_Alignment:
             try:
                 seqa, seqb = (str(i.seq) for i in fasta_seqs)
             except ValueError:
-                print(f'{input_file} must contain exactly two sequences')
+                print(f'Fasta-file {input_file} must contain exactly two sequences.')
             return(seqa, seqb)
 
-        self.b = b
-        self.a = a
-        self.alphabet, self.score_matrix = phylip_like_parser(phylip_file)
-        self.A, self.B = (self.encode(i) for i in get_sequences(fasta_file))
+        self.b = b # intercept
+        self.a = a # slope
+        self.alphabet, self.score_matrix = phylip_like_parser(phylip_file) # Make the output from phylip-like-parser() global.
+        self.A, self.B = (self.encode(i) for i in get_sequences(fasta_file)) # Make the two sequences global.
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
         self.vector = [[None for i in range(len(self.B) + 1)]\
