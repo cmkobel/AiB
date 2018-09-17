@@ -140,7 +140,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
             
 
 o = Global_Affine('score_matrix.phylip-like',
-                  'case2.fasta',
+                  'case4.fasta',
                   backtrack_type = 'single', # none (default) | single | multiple
                   a = 5,
                   b = 5) # default: 0
