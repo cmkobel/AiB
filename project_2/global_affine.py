@@ -42,7 +42,7 @@ class Global_Affine:
 
         # run selected settings algorithms
         print(f'''type of
-    gapcost:    g(x) = {a}x + {b}
+    gapcost:    g(x) = {self.SLOPE}x + {self.INTERCEPT}
     backtrack:  {backtrack_type}
 
 input ({len(self.A)}x{len(self.B)})
@@ -58,7 +58,9 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
         print(f'\nvector\n{pandas.DataFrame(self.vector)}')
 
-        self.backtrack_affine(backtrack_type)
+        print('an optimal alignment:')
+        for i in self.backtrack_affine(backtrack_type):
+            print(self.decode(i, join = True))
 
 
 
@@ -74,31 +76,6 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
             return [demapping[i] for i in input]
 
 
-    def dyn_linear(self):
-
-        def recursive(i, j):
-        #print(f'{i},{j}  ', end = '') # debug
-
-            # Has it already been calculated?
-            if self.result[i][j] != None:
-                return self.result[i][j]
-
-            # if not, calculate it..
-            else:
-                candidates = []
-                if (i > 0) and (j > 0): # Diagonally
-                    candidates.append(recursive(i-1, j-1) + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]]) #?)
-                if (i > 0) and (j >= 0): # Left
-                    candidates.append(recursive(i-1, j) + self.SLOPE)
-                if (i >= 0) and (j > 0): # Up
-                    candidates.append(recursive(i, j-1) + self.SLOPE)
-                if (i == 0) and (j == 0): # Base case
-                    candidates.append(0) # ?
-
-                self.result[i][j] = min(candidates)
-                return self.result[i][j]
-
-        return recursive(len(self.A), len(self.B))
 
 
     def dyn_affine(self): # g(x) = ax + b
@@ -119,7 +96,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                     if self.vector[i-1][j] == 1:
                         candidates.append((recursive(i-1, j)[0] + self.SLOPE, 1)) # continue gap
                     else:
-                        candidates.append( (recursive(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
+                        candidates.append((recursive(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
 
                 if (i >= 0) and (j > 0): #2: left
                     if self.vector[i][j-1] == 2:
@@ -138,27 +115,29 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
     def backtrack_affine(self, backtrack_type = 'single'):
-        print('backtracking:')
         
+        string_A = []
+        string_B = []
+
         def single(i ,j):
-            """ code copied from linear """
-            if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]]):
+
+
+            if self.vector[i][j] == 0:
                 string_a, string_b = single(i - 1, j - 1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
-            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.SLOPE):
+            elif self.vector[i][j] == 1:
                 string_a, string_b = single(i - 1, j)
                 return string_a + str(self.A[i - 1]), string_b + '-'
-            elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.SLOPE):
+            elif self.vector[i][j] == 2:
                 string_a, string_b = single(i, j - 1)
                 return string_a + '-', string_b + str(self.B[j-1])
-            elif i == 0 and j == 0:
+            elif self.vector[i][j] == 3:
                 return '', ''
 
 
         return single(len(self.A), len(self.B))
 
             
-
 
 o = Global_Affine('score_matrix.phylip-like',
                   'case2.fasta',
