@@ -36,8 +36,6 @@ class Global_Linear:
         self.A, self.B = (self.encode(i) for i in get_sequences(fasta_file)) # Make the two sequences global.
         self.result = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
-        self.vector = [[None for i in range(len(self.B) + 1)]\
-                       for i in range(len(self.A) + 1)]
 
 
         # run selected scoring algorithms
