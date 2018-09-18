@@ -39,6 +39,19 @@ class Global_Affine:
         self.vector = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
 
+        # tape-løsning:               
+        # for i in range(len(self.A)+1):
+        #     for j in range(len(self.B)+1):
+        #         if i == 0 and j == 0:
+        #             self.vector[i][j] = 3
+        #         elif i == 0:
+        #             self.vector[i][j] = 2
+        #         elif j == 0:
+        #             self.vector[i][j] = 1
+
+        
+                
+
 
         # run selected settings algorithms
         print(f'''type of
@@ -48,19 +61,19 @@ class Global_Affine:
 input ({len(self.A)}x{len(self.B)})
 A ({self.decode([i for i in map(str, self.A)], join = True)}) vertically
 B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
-
 ''')
 
 
 
         print('affine score:', self.dyn_affine())
-        print(pandas.DataFrame(self.result))
+        print(f'result =\n{pandas.DataFrame(self.result)}')
 
-        print(f'\nvector\n{pandas.DataFrame(self.vector)}')
+        print(f'\nvector =\n{pandas.DataFrame(self.vector)}\n')
 
-        print('an optimal alignment:')
-        for i in self.backtrack_affine(backtrack_type):
-            print(self.decode(i, join = True))
+        if backtrack_type == 'single':
+            print('an optimal alignment:')
+            for i in self.backtrack_affine(backtrack_type):
+                print(self.decode(i, join = True))
 
 
 
@@ -80,37 +93,42 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
     def dyn_affine(self): # g(x) = ax + b
 
-        def recursive(i, j):
+        def rec(i, j):
             # Glem definitionen og skriv noget der virker!
 
-        	# Has it already been calculated?
+            # Has it already been calculated?
             if self.result[i][j] != None and self.vector[i][j] != None:
                 return self.result[i][j], self.vector[i][j]
             
+            
             # if not, calculate it.
             else:
-                candidates = []
+                cand = [] # list of candidates
                 if (i > 0) and (j > 0): # 0: Diagonally
-                    candidates.append((recursive(i-1, j-1)[0] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost her
-                if (i > 0) and (j >= 0): #1:  up
-                    if self.vector[i-1][j] == 1:
-                        candidates.append((recursive(i-1, j)[0] + self.SLOPE, 1)) # continue gap
-                    else:
-                        candidates.append((recursive(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
+                    cand.append((rec(i-1, j-1)[0] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost ved diagonal bevægelse
+                if (i > 0) and (j >= 0): #1:  move down | overalt på nær top række
 
-                if (i >= 0) and (j > 0): #2: left
-                    if self.vector[i][j-1] == 2:
-                        candidates.append((recursive(i, j-1)[0] + self.SLOPE, 2))
+                    if rec(i-1, j)[1] == 1:
+                    #if self.vector[i-1][j] == 1:
+                        cand.append((rec(i-1, j)[0] + self.SLOPE, 1)) # continue gap
                     else:
-                        candidates.append((recursive(i, j-1)[0] + self.SLOPE + self.INTERCEPT, 2))
+                        cand.append((rec(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
+
+                if (i >= 0) and (j > 0): #2: move right | overalt på nær venstre kolonne
+                    if rec(i, j-1)[1] == 2:
+                    #if self.vector[i][j-1] == 2:
+                        cand.append((rec(i, j-1)[0] + self.SLOPE, 2))
+                    else:
+                        cand.append((rec(i, j-1)[0] + self.SLOPE + self.INTERCEPT, 2))
                 if (i == 0) and (j == 0): # Base case
-                    candidates.append((0, 3)) # ?
+                    cand.append((0, 3)) # ?
 
-                self.result[i][j], self.vector[i][j] = min(candidates)
+                self.result[i][j], self.vector[i][j] = min(cand)
+                #print(min(cand), cand)
 
                 return self.result[i][j], self.vector[i][j]
         
-        return recursive(len(self.A), len(self.B))[0] # [0] ?
+        return rec(len(self.A), len(self.B))[0] # [0] ?
 
 
 
@@ -139,9 +157,9 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
             
 
-o = Global_Affine('score_matrix.phylip-like',
-                  'case4.fasta',
-                  backtrack_type = 'single', # none (default) | single | multiple
+o = Global_Affine(phylip_file = 'score_matrix.phylip-like',
+                  fasta_file = 'case3.fasta',
+                  backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
 
