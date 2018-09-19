@@ -16,8 +16,8 @@ class Global_Affine:
                 raw = [line.strip().split() for line in file]
                 rv = {'alphabet_len': raw[0], # alphabet isn't used for anything, is it?
                       'alphabet': [i[0] for i in raw[1:]],
-                      'score_matrix': [[int(elem) for elem in list[1:]] for list in raw[1:]]}
-            return rv['alphabet'], rv['score_matrix']
+                      'substitution_matrix': [[int(elem) for elem in list[1:]] for list in raw[1:]]}
+            return rv['alphabet'], rv['substitution_matrix']
         def get_sequences(input_file):
             fasta_seqs = SeqIO.parse(input_file,'fasta')
             try:
@@ -31,7 +31,7 @@ class Global_Affine:
         # set global variables # ought to make these upper-case.
         self.SLOPE = a
         self.INTERCEPT = b
-        self.ALPHABET, self.SCORE_MATRIX = phylip_like_parser(phylip_file) # Make the output from phylip-like-parser() global.
+        self.ALPHABET, self.SUBSTITUTION_MATRIX = phylip_like_parser(phylip_file) # Make the output from phylip-like-parser() global.
         self.A, self.B = (self.encode(i) for i in get_sequences(fasta_file)) # Make the two sequences global.
         
         self.result = [[None for i in range(len(self.B) + 1)]\
@@ -54,13 +54,10 @@ class Global_Affine:
 
 
         # run selected settings algorithms
-        print(f'''score_matrix = 
-{pandas.DataFrame(self.SCORE_MATRIX)}
+        print(f'''substitution_matrix = 
+{pandas.DataFrame(self.SUBSTITUTION_MATRIX)}
 
-alphabet:
-{self.ALPHABET}
-
-
+alphabet: {self.ALPHABET}
 
 type of
     gapcost:    g(x) = {self.SLOPE}x + {self.INTERCEPT}
@@ -117,7 +114,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                 #print(i, j) # 0,0   1,0
                 cand = [] # list of candidates
                 if (i > 0) and (j > 0): # 0: move diagonally | overalt på nær top række og venstre kolonne
-                    cand.append((rec(i-1, j-1)[0] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost ved diagonal bevægelse
+                    cand.append((rec(i-1, j-1)[0] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost ved diagonal bevægelse
                 
                 if (i > 0) and (j >= 0): #1:  means we can subtract from i (move vertically) | overalt på nær top række
                     if rec(i-1, j)[1] == 1: # true if downwards gap was started in prior cell
@@ -154,14 +151,14 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                         cand.append((0, 3)) # start of table, add 0, 3
                     
                     if i > 0 and j > 0: # means we can subtrack from both i and j
-                        cand.append((self.result[i-1][j-1] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0))
-                        print('vivoksne', i, j,':', self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]])
+                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 0))
+                        #print('vivoksne', i, j,':', self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]])
                     
                     if i >= 0 and j > 0: # Means we can subtract from j (move horizontally) | overalt på nær venstre kolonne
                         if self.vector[i][j-1] == 2:
                             cand.append((self.result[i][j-1] + self.SLOPE, 2)) # continue gap
                         else:
-                    #        print(self.result)
+                            #print(self.result)
                             cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 2)) # start new gap
 
                     if i > 0 and j >= 0: # Means we can subtract from i (move vertically) | overalt på nær top række
@@ -211,8 +208,8 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
             
 
-o = Global_Affine(phylip_file = 'score_matrix.phylip-like',
-                  fasta_file = 'case4.fasta', # 24, 22, 29, 395
+o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
+                  fasta_file = 'case3.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
