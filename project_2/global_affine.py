@@ -54,7 +54,15 @@ class Global_Affine:
 
 
         # run selected settings algorithms
-        print(f'''type of
+        print(f'''score_matrix = 
+{pandas.DataFrame(self.SCORE_MATRIX)}
+
+alphabet:
+{self.ALPHABET}
+
+
+
+type of
     gapcost:    g(x) = {self.SLOPE}x + {self.INTERCEPT}
     backtrack:  {backtrack_type}
 
@@ -65,7 +73,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 
-        print('affine score:', self.dyn_affine())
+        print('affine score:', self.affine())
         print(f'result =\n{pandas.DataFrame(self.result)}')
 
         print(f'\nvector =\n{pandas.DataFrame(self.vector)}\n')
@@ -91,9 +99,12 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 
-    def dyn_affine(self): # g(x) = ax + b
-
+    def affine(self): # g(x) = ax + b
+        print('i j')
+        print('___')
         def rec(i, j):
+            """ this function yields the wrong score on case3.fasta """
+            
             # Glem definitionen og skriv noget der virker!
 
             # Has it already been calculated?
@@ -103,23 +114,26 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
             
             # if not, calculate it.
             else:
+                #print(i, j) # 0,0   1,0
                 cand = [] # list of candidates
-                if (i > 0) and (j > 0): # 0: Diagonally
+                if (i > 0) and (j > 0): # 0: move diagonally | overalt på nær top række og venstre kolonne
                     cand.append((rec(i-1, j-1)[0] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost ved diagonal bevægelse
-                if (i > 0) and (j >= 0): #1:  move down | overalt på nær top række
-
-                    if rec(i-1, j)[1] == 1:
+                
+                if (i > 0) and (j >= 0): #1:  means we can subtract from i (move vertically) | overalt på nær top række
+                    if rec(i-1, j)[1] == 1: # true if downwards gap was started in prior cell
                     #if self.vector[i-1][j] == 1:
                         cand.append((rec(i-1, j)[0] + self.SLOPE, 1)) # continue gap
                     else:
                         cand.append((rec(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
 
-                if (i >= 0) and (j > 0): #2: move right | overalt på nær venstre kolonne
+
+                if (i >= 0) and (j > 0): #2: means we can subtract from j (move horizontally) | overalt på nær venstre kolonne
                     if rec(i, j-1)[1] == 2:
                     #if self.vector[i][j-1] == 2:
                         cand.append((rec(i, j-1)[0] + self.SLOPE, 2))
                     else:
                         cand.append((rec(i, j-1)[0] + self.SLOPE + self.INTERCEPT, 2))
+                
                 if (i == 0) and (j == 0): # Base case
                     cand.append((0, 3)) # ?
 
@@ -127,8 +141,48 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                 #print(min(cand), cand)
 
                 return self.result[i][j], self.vector[i][j]
-        
-        return rec(len(self.A), len(self.B))[0] # [0] ?
+
+
+        def iterative(len_A, len_B):
+            """ this function also yields the wrong score on case3.fasta, which means that the error is
+            probably outside affine() """
+            for i in range(len_A+1):
+                for j in range(len_B+1):
+                    #print(i, j, 'iterative')
+                    cand = []
+                    if i == 0 and j == 0:
+                        cand.append((0, 3)) # start of table, add 0, 3
+                    
+                    if i > 0 and j > 0: # means we can subtrack from both i and j
+                        cand.append((self.result[i-1][j-1] + self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]], 0))
+                        print('vivoksne', i, j,':', self.SCORE_MATRIX[self.A[i-1]][self.B[j-1]])
+                    
+                    if i >= 0 and j > 0: # Means we can subtract from j (move horizontally) | overalt på nær venstre kolonne
+                        if self.vector[i][j-1] == 2:
+                            cand.append((self.result[i][j-1] + self.SLOPE, 2)) # continue gap
+                        else:
+                    #        print(self.result)
+                            cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 2)) # start new gap
+
+                    if i > 0 and j >= 0: # Means we can subtract from i (move vertically) | overalt på nær top række
+                        if self.vector[i-1][j] == 1:
+                            cand.append((self.result[i-1][j] + self.SLOPE, 1)) # continue gap
+                        else:
+                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
+
+
+                    self.result[i][j], self.vector[i][j] = min(cand)
+                    #print(min(cand), cand)
+                    #cand = []
+            #print('last',self.result)
+
+
+
+
+
+        #return rec(len(self.A), len(self.B))[0] # [0] ?
+
+        return iterative(len(self.A), len(self.B))
 
 
 
@@ -158,7 +212,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
             
 
 o = Global_Affine(phylip_file = 'score_matrix.phylip-like',
-                  fasta_file = 'case3.fasta',
+                  fasta_file = 'case4.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
