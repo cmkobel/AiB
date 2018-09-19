@@ -1,4 +1,6 @@
->seq2
-tcga
+
 >seq1
-tccagag
+tccagaga
+
+>seq2
+tcgat
