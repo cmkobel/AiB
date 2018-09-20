@@ -141,31 +141,29 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
         def iterative(len_A, len_B):
-            """ this function also yields the wrong score on case3.fasta, which means that the error is
-            probably outside affine() """
+            """ This function has a problem, that it can't record if there is both a vertical and horizontal gap possible. """
             for i in range(len_A+1):
                 for j in range(len_B+1):
                     #print(i, j, 'iterative')
                     cand = []
                     if i == 0 and j == 0:
-                        cand.append((0, 3)) # start of table, add 0, 3
+                        cand.append((0, 2)) # start of table, add 0, 3
                     
-                    if i > 0 and j > 0: # means we can subtrack from both i and j
-                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 0))
-                        #print('vivoksne', i, j,':', self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]])
+                    if i > 0 and j > 0: # 
+                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 2))
                     
-                    if i >= 0 and j > 0: # Means we can subtract from j (move horizontally) | overalt på nær venstre kolonne
-                        if self.vector[i][j-1] == 2:
-                            cand.append((self.result[i][j-1] + self.SLOPE, 2)) # continue gap
+                    if i >= 0 and j > 0: # 
+                        if self.vector[i][j-1] == 1:
+                            cand.append((self.result[i][j-1] + self.SLOPE, 1)) # 
                         else:
                             #print(self.result)
-                            cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 2)) # start new gap
+                            cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 1)) # 
 
-                    if i > 0 and j >= 0: # Means we can subtract from i (move vertically) | overalt på nær top række
-                        if self.vector[i-1][j] == 1:
-                            cand.append((self.result[i-1][j] + self.SLOPE, 1)) # continue gap
+                    if i > 0 and j >= 0: #
+                        if self.vector[i-1][j] == 0:
+                            cand.append((self.result[i-1][j] + self.SLOPE, 0)) #
                         else:
-                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
+                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 0)) #
 
 
                     self.result[i][j], self.vector[i][j] = min(cand)
@@ -213,5 +211,4 @@ o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
-
 
