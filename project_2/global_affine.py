@@ -1,4 +1,4 @@
-import pandas #pretty print result 2d-array # performance issues!
+
 from Bio import SeqIO
 
 # Author: Carl M. Kobel 2018
@@ -25,6 +25,9 @@ class Global_Affine:
             except ValueError:
                 print(f'Fasta-file {input_file} must contain exactly two sequences.')
             return(seqa, seqb)
+        def pprint(input):
+            for i in input:
+                print(*i, sep = '\t')
 
 
         
@@ -55,7 +58,7 @@ class Global_Affine:
 
         # run selected settings algorithms
         print(f'''substitution_matrix = 
-{pandas.DataFrame(self.SUBSTITUTION_MATRIX)}
+{pprint(self.SUBSTITUTION_MATRIX)}
 
 alphabet: {self.ALPHABET}
 
@@ -71,9 +74,10 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
         print('affine score:', self.affine())
-        print(f'result =\n{pandas.DataFrame(self.result)}')
+        print(f'result =\n{pprint(self.result)}')
+        
 
-        print(f'\nvector =\n{pandas.DataFrame(self.vector)}\n')
+        print(f'\nvector =\n{pprint(self.vector)}\n')
 
         if backtrack_type == 'single':
             print('an optimal alignment:')
@@ -96,11 +100,12 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 
+
     def affine(self): # g(x) = ax + b
         print('i j')
         print('___')
         def rec(i, j):
-            """ this function yields the wrong score on case3.fasta """
+            """ this function does not take into account that you might have converging gaps """
             
             # Glem definitionen og skriv noget der virker!
 
@@ -140,17 +145,25 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                 return self.result[i][j], self.vector[i][j]
 
 
-        def iterative(len_A, len_B):
-            """ This function has a problem, that it can't record if there is both a vertical and horizontal gap possible. """
+        def new_iterative(len_A, len_B):
+            """ This function has a problem, that it can't record if there is both a vertical and horizontal gap possible. 
+
+            3   diagonal
+            2   vertical
+            1   horizontal
+            0   vertical and horizontal
+            """
+
             for i in range(len_A+1):
                 for j in range(len_B+1):
-                    #print(i, j, 'iterative')
-                    cand = []
-                    if i == 0 and j == 0:
-                        cand.append((0, 2)) # start of table, add 0, 3
+                    #print(i, j, 'new_iterative')
+                    cand = []                    
                     
-                    if i > 0 and j > 0: # 
-                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 2))
+                    if i > 0 and j >= 0: #
+                        if self.vector[i-1][j] == 0:
+                            cand.append((self.result[i-1][j] + self.SLOPE, 0)) #
+                        else:
+                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 0)) #
                     
                     if i >= 0 and j > 0: # 
                         if self.vector[i][j-1] == 1:
@@ -159,17 +172,18 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                             #print(self.result)
                             cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 1)) # 
 
-                    if i > 0 and j >= 0: #
-                        if self.vector[i-1][j] == 0:
-                            cand.append((self.result[i-1][j] + self.SLOPE, 0)) #
-                        else:
-                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 0)) #
+                    if i > 0 and j > 0: # 
+                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 2))
 
+                    if i == 0 and j == 0:
+                        cand.append((0, 2)) # start of table, add 0, 3
 
-                    self.result[i][j], self.vector[i][j] = min(cand)
-                    #print(min(cand), cand)
-                    #cand = []
-            #print('last',self.result)
+                    # as a zero in the vector matrix means that both a 
+                    cand.sort() # minimum is the first element now
+                    if len(cand) > 1:
+                        if cand[0][0] == cand [1][0]: # both vertical and horizontal is possible
+                            cand[0] = (cand[0][0], 0) # change one of them into a zero for the vector matrix
+                    self.result[i][j], self.vector[i][j] = cand[0]
 
 
 
@@ -177,11 +191,12 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
         #return rec(len(self.A), len(self.B))[0] # [0] ?
 
-        return iterative(len(self.A), len(self.B))
+        return new_iterative(len(self.A), len(self.B))
 
 
 
     def backtrack_affine(self, backtrack_type = 'single'):
+        """Needs to be adjusted the new vector symbols"""
         
         string_A = []
         string_B = []
@@ -204,11 +219,9 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
         return single(len(self.A), len(self.B))
 
-            
 
 o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
                   fasta_file = 'case3.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
-
