@@ -42,18 +42,6 @@ class Global_Affine:
         self.vector = [[None for i in range(len(self.B) + 1)]\
                        for i in range(len(self.A) + 1)]
 
-        # tape-løsning:               
-        # for i in range(len(self.A)+1):
-        #     for j in range(len(self.B)+1):
-        #         if i == 0 and j == 0:
-        #             self.vector[i][j] = 3
-        #         elif i == 0:
-        #             self.vector[i][j] = 2
-        #         elif j == 0:
-        #             self.vector[i][j] = 1
-
-        
-                
 
 
         # run selected settings algorithms
@@ -159,33 +147,34 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                     #print(i, j, 'new_iterative')
                     cand = []                    
                     
-                    if i > 0 and j >= 0: #
-                        if self.vector[i-1][j] == 0:
-                            cand.append((self.result[i-1][j] + self.SLOPE, 0)) #
+                    if i > 0 and j >= 0: # Horizontal
+                        if self.vector[i-1][j] == 1:
+                            cand.append((self.result[i-1][j] + self.SLOPE, 1)) #
                         else:
-                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 0)) #
+                            cand.append((self.result[i-1][j] + self.SLOPE + self.INTERCEPT, 1)) #
                     
-                    if i >= 0 and j > 0: # 
-                        if self.vector[i][j-1] == 1:
-                            cand.append((self.result[i][j-1] + self.SLOPE, 1)) # 
+                    if i >= 0 and j > 0: # Vertical
+                        if self.vector[i][j-1] == 2:
+                            cand.append((self.result[i][j-1] + self.SLOPE, 2)) # 
                         else:
                             #print(self.result)
-                            cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 1)) # 
+                            cand.append((self.result[i][j-1] + self.SLOPE + self.INTERCEPT, 2)) # 
 
-                    if i > 0 and j > 0: # 
-                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 2))
+                    if i > 0 and j > 0: # Diagonal
+                        cand.append((self.result[i-1][j-1] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 3))
 
                     if i == 0 and j == 0:
-                        cand.append((0, 2)) # start of table, add 0, 3
+                        cand.append((0, 3)) # start of table, add 0, 3
 
                     # as a zero in the vector matrix means that both a 
                     cand.sort() # minimum is the first element now
                     if len(cand) > 1:
-                        if cand[0][0] == cand [1][0]: # both vertical and horizontal is possible
+                        #if cand[0][1] < 3 and cand[1][1] < 3: # both vector 
+                        if cand[0][0] == cand[1][0] and (cand[0][1] + cand[1][1] == 3): # both vertical and horizontal is possible
+                            print(cand)
                             cand[0] = (cand[0][0], 0) # change one of them into a zero for the vector matrix
+                            print(cand, 'e')
                     self.result[i][j], self.vector[i][j] = cand[0]
-
-
 
 
 
@@ -202,26 +191,31 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
         string_B = []
 
         def single(i ,j):
+            #3   diagonal
+            #2   vertical
+            #1   horizontal
+            #0   vertical and horizontal
 
 
-            if self.vector[i][j] == 0:
+            if i == 0 and j == 0:
+                return '', ''
+            elif self.vector[i][j] == 3: # diagonal
                 string_a, string_b = single(i - 1, j - 1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
-            elif self.vector[i][j] == 1:
+            elif self.vector[i][j] == 2: # vertical
                 string_a, string_b = single(i - 1, j)
                 return string_a + str(self.A[i - 1]), string_b + '-'
-            elif self.vector[i][j] == 2:
+            elif self.vector[i][j] <= 1: # horizontal
                 string_a, string_b = single(i, j - 1)
                 return string_a + '-', string_b + str(self.B[j-1])
-            elif self.vector[i][j] == 3:
-                return '', ''
+
 
 
         return single(len(self.A), len(self.B))
 
 
 o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
-                  fasta_file = 'case3.fasta', # 24, 22, 29, 395
+                  fasta_file = 'case4.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
