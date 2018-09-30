@@ -31,6 +31,23 @@ class SP_exact_3:
             return ''.join([demapping[i] for i in input])
         else:
             return [demapping[i] for i in input]
+    
+    def _3dprint(self, input):
+        rv = '''
+0-- C
+|\\
+| B
+A
+'''
+        
+        for i in range(len(self.A)):
+            for j in range(len(self.B)):
+                rv += '\n' + j * ' '
+                for k in range(len(self.C)):
+                    rv += str(input[i][j][k]) + ' ' + ' ' * (len(self.B) + len(self.C))
+        return rv
+
+
 
 
 
@@ -66,7 +83,7 @@ class SP_exact_3:
                         cand.append(self.T[i][j][k-1] + self.GAP + self.GAP)
 
                     #print(f'T at {i, j, k}: {self.T}')
-                    print(f'cand at {i, j, k}: {cand}')
+                    #print(f'cand at {i, j, k}: {cand}')
 
                     self.T[i][j][k] = min(cand)
         return self.T
@@ -75,13 +92,16 @@ class SP_exact_3:
 
 
 
-o = SP_exact_3('AATCGTG', 'ATGCA', 'TTG')
+o = SP_exact_3('AAATCG', 'GGGGG', 'GGGGG')
 print(f"""
 A ({o.A})
 B ({o.B})
 C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
 
-{o.align()}
+align:
+{o._3dprint(o.align())}
+
+
 
 
 
