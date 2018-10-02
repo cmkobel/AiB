@@ -9,8 +9,8 @@ class SP_exact_3:
         self.B = self.encode(B)
         self.C = self.encode(C)
         self.GAP = 5
-        self.T = [[[None for i in range(len(self.C))] for i in range(len(self.B))] for i in range(len(self.A))]
-        self.P = [[[None for i in range(len(self.C))] for i in range(len(self.B))] for i in range(len(self.A))]
+        self.T = [[[None for i in range(len(self.C)+1)] for i in range(len(self.B)+1)] for i in range(len(self.A)+1)]
+        self.P = [[[None for i in range(len(self.C)+1)] for i in range(len(self.B)+1)] for i in range(len(self.A)+1)]
 
         #           A  C  G  T 
         self.SM = [[0, 5, 2, 5], # Substitution Matrix
@@ -42,22 +42,20 @@ class SP_exact_3:
 A
 '''
         
-        for i in range(len(self.A)):
-            for j in range(len(self.B)):
-                if i < len(self.A)-1:
-                    if j >= 0:
-                        rv += '\n'
+        for i in range(len(self.A)+1):
+            for j in range(len(self.B)+1):
+                if i < len(self.A):
+                    rv += '\n'
                     if j >= 1:
                         rv += '|'
-
                     if j >= 2:
                         rv += j * ' '
                 else:
                     rv += '\n' + j* ' '
-                for k in range(len(self.C)):
+                for k in range(len(self.C)+1):
                     rv += str(input[i][j][k])
-                    if (j == 0 or j == len(self.B)) and k < len(self.C)-1:
-                        rv += ' ' + '.' * ((len(self.B) + len(self.C)) - 1) + ' '
+                    if (j == 0 or j == len(self.B)) and k < len(self.C):
+                        rv += ' ' + '.' * ((len(self.B) + len(self.C))-1) + ' '
                     else:
                         rv += ' ' + ' ' * (len(self.B) + len(self.C))
         return rv
@@ -65,50 +63,43 @@ A
 
 
     def align(self, trace = False): # todo gives an error if False
-        """ Non-recursive, who gives a duck?
-        I'm assuming this is linear gapcost? 
-        regner med at implementere backtracking direkte her. Genvej, nemmere end at lave en backtrack algo ved siden af. Get it over with.
+        """ Non-recursive, because that is why.
+        Assuming linear gapcost.
+        backtracking er implementeret direkte her. Genvej, nemmere end at lave en backtrack algo ved siden af. Get it over with.
         """
-        
         for i in range(len(self.A)+1):
-            for j in range(len(self.B)):
-                for k in range(len(self.C)):
+            for j in range(len(self.B)+1):
+                for k in range(len(self.C)+1):
                     T_cand = [] # T_candidates list
                     P_cand = []
-
                     if i == 0 and j == 0 and k == 0: # origo
                         T_cand.append(0)
                         if trace: P_cand.append(0)
                     
-                    
                     if i > 0 and j > 0 and k > 0: # diag (no gap)
-                        T_cand.append(self.T[i-1][j-1][k-1] + self.SM[self.A[i]][self.B[j]] + self.SM[self.B[j]][self.C[k]] + self.SM[self.A[i]][self.C[k]])
+                        T_cand.append(self.T[i-1][j-1][k-1] + self.SM[self.A[i-1]][self.B[j-1]] + self.SM[self.B[j-1]][self.C[k-1]] + self.SM[self.A[i-1]][self.C[k-1]])
                         if trace: P_cand.append(1)
                     
                     if i > 0 and j > 0 and k >= 0: # gap in C
-                        T_cand.append(self.T[i-1][j-1][k] + self.SM[self.A[i]][self.B[j]] + self.GAP + self.GAP)
+                        T_cand.append(self.T[i-1][j-1][k] + self.SM[self.A[i-1]][self.B[j-1]] + self.GAP + self.GAP)
                         if trace: P_cand.append(2)
-                    
                     if i > 0 and j >= 0 and k > 0: # gap in B
-                        T_cand.append(self.T[i-1][j][k-1] + self.GAP + self.SM[self.A[i]][self.C[k]] + self.GAP)
+                        T_cand.append(self.T[i-1][j][k-1] + self.GAP + self.SM[self.A[i-1]][self.C[k-1]] + self.GAP)
                         if trace: P_cand.append(3)
-                    
                     if i >= 0 and j > 0 and k > 0: # gap in A
-                        T_cand.append(self.T[i][j-1][k-1] + self.GAP + self.GAP + self.SM[self.B[j]][self.C[k]])
+                        T_cand.append(self.T[i][j-1][k-1] + self.GAP + self.GAP + self.SM[self.B[j-1]][self.C[k-1]])
                         if trace: P_cand.append(4)
                     
-
                     if i > 0 and j >= 0 and k >= 0: # gap in B, C
                         T_cand.append(self.T[i-1][j][k] + self.GAP + self.GAP)
                         if trace: P_cand.append(5)
-                    
                     if i >= 0 and j > 0 and k >= 0: # gap in A, C
                         T_cand.append(self.T[i][j-1][k] + self.GAP + self.GAP)
                         if trace: P_cand.append(6)
-                    
                     if i >= 0 and j >= 0 and k > 0: # gap in A, B
                         T_cand.append(self.T[i][j][k-1] + self.GAP + self.GAP)
                         if trace: P_cand.append(7)
+                    
                     #print(f'T at {i, j, k}: {self.T}')
                     #print(f'T_cand at {i, j, k}: {T_cand}')
 
@@ -157,19 +148,18 @@ A
 
 
 
-o = SP_exact_3('AAAA', 'AAAA', 'AAA')
+o = SP_exact_3('AAAA', 'AAA', 'AA')
 print(f"""
 A ({o.A})
 B ({o.B})
 C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
 
 align:
-{o._3dprint(o.align(trace = True))}
-
-P
-{o._3dprint(o.P)}
-
-
+{o._3dprint(o.align(trace = False))}
+"""
+#P
+#{o._3dprint(o.P)}
+"""
 """)
 #present the aligned strings.
-for i in o.backtrack(): print(o.decode(i, join = True)[::-1])
+#for i in o.backtrack(): print(o.decode(i, join = True)[::-1])
