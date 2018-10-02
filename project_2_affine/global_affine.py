@@ -177,9 +177,9 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 
-        return rec(len(self.A), len(self.B))[0] # [0] ?
+        #return rec(len(self.A), len(self.B))[0] # [0] ?
 
-        # return new_iterative(len(self.A), len(self.B))
+        return new_iterative(len(self.A), len(self.B))
 
 
 
@@ -214,7 +214,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
-                  fasta_file = 'case1.fasta', # 24, 22, 29, 395
+                  fasta_file = 'case2.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
