@@ -93,7 +93,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
         print('i j')
         print('___')
         def rec(i, j):
-            """ this function does not take into account that you might have converging gaps """
+            """ This function seems to work perfectly, but I'm not sure about using '3' as sign for moving diagonally. """
             
             # Glem definitionen og skriv noget der virker!
 
@@ -106,9 +106,6 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
             else:
                 #print(i, j) # 0,0   1,0
                 cand = [] # list of candidates
-                if (i > 0) and (j > 0): # 0: move diagonally | overalt på nær top række og venstre kolonne
-                    cand.append((rec(i-1, j-1)[0] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 0)) # ingen gapcost ved diagonal bevægelse
-                
                 if (i > 0) and (j >= 0): #1:  means we can subtract from i (move vertically) | overalt på nær top række
                     if rec(i-1, j)[1] == 1: # true if downwards gap was started in prior cell
                     #if self.vector[i-1][j] == 1:
@@ -116,13 +113,16 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
                     else:
                         cand.append((rec(i-1, j)[0] + self.SLOPE + self.INTERCEPT, 1)) # start new gap
 
-
                 if (i >= 0) and (j > 0): #2: means we can subtract from j (move horizontally) | overalt på nær venstre kolonne
                     if rec(i, j-1)[1] == 2:
                     #if self.vector[i][j-1] == 2:
                         cand.append((rec(i, j-1)[0] + self.SLOPE, 2))
                     else:
                         cand.append((rec(i, j-1)[0] + self.SLOPE + self.INTERCEPT, 2))
+                
+                if (i > 0) and (j > 0): # 0: move diagonally | overalt på nær top række og venstre kolonne
+                    cand.append((rec(i-1, j-1)[0] + self.SUBSTITUTION_MATRIX[self.A[i-1]][self.B[j-1]], 3)) # ingen gapcost ved diagonal bevægelse
+                
                 
                 if (i == 0) and (j == 0): # Base case
                     cand.append((0, 3)) # ?
@@ -134,8 +134,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
         def new_iterative(len_A, len_B):
-            """ This function has a problem, that it can't record if there is both a vertical and horizontal gap possible. 
-
+            """ This function works perfectly. I don't know if it has problems with overlapping gap openings, because I don't have data to test it. 
             3   diagonal
             2   vertical
             1   horizontal
@@ -178,9 +177,9 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 
-        #return rec(len(self.A), len(self.B))[0] # [0] ?
+        return rec(len(self.A), len(self.B))[0] # [0] ?
 
-        return new_iterative(len(self.A), len(self.B))
+        # return new_iterative(len(self.A), len(self.B))
 
 
 
@@ -215,7 +214,7 @@ B ({self.decode([i for i in map(str, self.B)], join = True)}) horizontally
 
 
 o = Global_Affine(phylip_file = 'substitution_matrix.phylip-like',
-                  fasta_file = 'case4.fasta', # 24, 22, 29, 395
+                  fasta_file = 'case1.fasta', # 24, 22, 29, 395
                   backtrack_type = 'none', # none (default) | single | multiple (not implemented yet)
                   a = 5,
                   b = 5) # default: 0
