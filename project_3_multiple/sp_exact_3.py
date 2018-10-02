@@ -34,6 +34,7 @@ class SP_exact_3:
             return [demapping[i] for i in input]
     
     def _3dprint(self, input):
+        """ Super pretty printer of 3-dimensional arrays """
         rv = '''
 0-- C
 |\\
@@ -72,90 +73,152 @@ A
             for j in range(len(self.B)):
                 for k in range(len(self.C)):
                     T_cand = [] # T_candidates list
-                    arrow = []
+                    P_cand = []
 
-                    if i == 0 and j == 0 and k == 0:
-                        T_cand.append(0) # Det der skal stå i T?
-                        if fill_P: arrow.append(0)
-                    if i > 0 and j > 0 and k > 0: # diag
+                    if i == 0 and j == 0 and k == 0: # origo
+                        T_cand.append(0)
+                        if fill_P: P_cand.append(0)
+                    
+                    
+                    if i > 0 and j > 0 and k > 0: # diag (no gap)
                         T_cand.append(self.T[i-1][j-1][k-1] + self.SM[self.A[i]][self.B[j]] + self.SM[self.B[j]][self.C[k]] + self.SM[self.A[i]][self.C[k]])
-                        if fill_P: arrow.append(1)
-                    if i > 0 and j > 0 and k >= 0:
+                        if fill_P: P_cand.append(1)
+                    
+                    if i > 0 and j > 0 and k >= 0: # gap in C
                         T_cand.append(self.T[i-1][j-1][k] + self.SM[self.A[i]][self.B[j]] + self.GAP + self.GAP)
-                        if fill_P: arrow.append(2)
-                    if i > 0 and j >= 0 and k > 0:
+                        if fill_P: P_cand.append(2)
+                    
+                    if i > 0 and j >= 0 and k > 0: # gap in B
                         T_cand.append(self.T[i-1][j][k-1] + self.GAP + self.SM[self.A[i]][self.C[k]] + self.GAP)
-                        if fill_P: arrow.append(3)
-                    if i >= 0 and j > 0 and k > 0:
+                        if fill_P: P_cand.append(3)
+                    
+                    if i >= 0 and j > 0 and k > 0: # gap in A
                         T_cand.append(self.T[i][j-1][k-1] + self.GAP + self.GAP + self.SM[self.B[j]][self.C[k]])
-                        if fill_P: arrow.append(4)
-                    if i > 0 and j >= 0 and k >= 0:
+                        if fill_P: P_cand.append(4)
+                    
+
+                    if i > 0 and j >= 0 and k >= 0: # gap in B, C
                         T_cand.append(self.T[i-1][j][k] + self.GAP + self.GAP)
-                        if fill_P: arrow.append(5)
-                    if i >= 0 and j > 0 and k >= 0:
+                        if fill_P: P_cand.append(5)
+                    
+                    if i >= 0 and j > 0 and k >= 0: # gap in A, C
                         T_cand.append(self.T[i][j-1][k] + self.GAP + self.GAP)
-                        if fill_P: arrow.append(6)
-                    if i >= 0 and j >= 0 and k > 0:
+                        if fill_P: P_cand.append(6)
+                    
+                    if i >= 0 and j >= 0 and k > 0: # gap in A, B
                         T_cand.append(self.T[i][j][k-1] + self.GAP + self.GAP)
-                        if fill_P: arrow.append(7)
+                        if fill_P: P_cand.append(7)
                     #print(f'T at {i, j, k}: {self.T}')
                     #print(f'T_cand at {i, j, k}: {T_cand}')
 
-                    best = min(T_cand)
-                    self.T[i][j][k] = best
+                    selected = min(T_cand)
+                    self.T[i][j][k] = selected
                     if fill_P:
-                        self.P[i][j][k] = arrow[T_cand.index(best)]
-                        print(f'{i, j, k}: {best} @ {T_cand.index(best)} in {T_cand}')
+                        self.P[i][j][k] = P_cand[T_cand.index(selected)] # find the index of the selected value, and select the P_cand value at the same index (corresponding direction.
+                        #print(f'{i, j, k}: {selected} @ {T_cand.index(selected)} in {T_cand}') # for debug.
         return self.T
 
 
     def backtrack(self):
-        def osingle(i, j):
+
+        #string_a = ''
+        #string_b = ''
+        #string_c = ''
+        def single(i, j, k): # use the self.P 3d-array (cheating a bit haha)
+
+            if i == 0 and j == 0 and k == 0: # end reached. return.
+                return '', '', ''
+
+
+            if self.P[i][j][k] == 1:
+                string_a, string_b, string_c = single(i-1, j-1, k-1)
+                return string_a + str(self.A[i-1]), string_b + str(self.B[j-1]), string_c + str(self.C[k-1])
+
+            if self.P[i][j][k] == 2:
+                string_a, string_b, string_c = single(i-1, j-1, k)
+                return string_a + str(self.A[i-1]), string_b + str(self.B[j-1]), string_c + '-'
+
+            if self.P[i][j][k] == 3:
+                string_a, string_b, string_c = single(i-1, j, k-1)
+                return string_a + str(self.A[i-1]), string_b + '-', string_c + str(self.C[k-1])
+
+            if self.P[i][j][k] == 4:
+                string_a, string_b, string_c = single(i, j-1, k-1)
+                return string_a + '-', string_b + str(self.B[j-1]), string_c + str(self.C[k-1])
+
+
+            if self.P[i][j][k] == 5:
+                string_a, string_b, string_c = single(i-1, j, k)
+                return string_a + str(self.A[i-1]), string_b + '-', string_c + '-'
+
+            if self.P[i][j][k] == 6:
+                string_a, string_b, string_c = single(i, j-1, k)
+                return string_a + '-', string_b + str(self.B[j-1]), string_c + '-'
+
+            if self.P[i][j][k] == 7:
+                string_a, string_b, string_c = single(i, j, k-1)
+                return string_a + '-', string_b + '-', string_c + str(self.C[k-1])
+
+
+
+
+
+
+            
+        def single_from_linear(i, j): # just for inspiration.
             """ Recursive backtrack. """
-
-
-            # old
+            # old (from linear 2 i suppose)
             if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                string_a, string_b = single(i - 1, j - 1)
+                string_a, string_b = single(i-1, j-1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
-            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i - 1][j] + self.a):
-                string_a, string_b = single(i - 1, j)
-                return string_a + str(self.A[i - 1]), string_b + '-'
+            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i-1][j] + self.a):
+                string_a, string_b = single(i-1, j)
+                return string_a + str(self.A[i-1]), string_b + '-'
             elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
-                string_a, string_b = single(i, j - 1)
+                string_a, string_b = single(i, j-1)
                 return string_a + '-', string_b + str(self.B[j-1])
             elif i == 0 and j == 0:
                 return '', ''
+        
 
+
+        def single_what_noP(i, j, k): # this method doesn't use the self.P. What a mess.
             #new 
+            if i == 0 and j == 0 and k == 0:
+                return '', '', '' # base case
             if i > 0 and j > 0 and k > 0 and self.T[i][j][k] == (self.T[i-1][j-1][k-1] + self.SM[self.A[i]][self.B[j]] + self.SM[self.B[j]][self.C[k]] + self.SM[self.A[i]][self.C[k]]):
-                pass
+                string_a, string_b, string_c = single(i-1, j-1, k-1)
+            
 
-
-            # det her bliver simpelthen for langhåret. Nu implementerer jeg hele lortet i align(), og så må jeg abstrahere fra en dårlige kørselstid på en anden måde.
-
-        for i in range(len(self.A)):
-            for j in range(len(self.B)):
-                for k in range(len(self.C)):
-                    pass
+        return single(len(self.A)-1, len(self.B)-1, len(self.C)-1)
 
 
 
-o = SP_exact_3('AAA', 'AAA', 'AAA')
+
+
+        def for_some_reason_i_began_a_non_recursive_version__(): # delete soon..         
+        # det her bliver simpelthen for langhåret. Nu implementerer jeg hele lortet i align(), og så må jeg abstrahere fra en dårlige kørselstid på en anden måde.
+        # Men det giver da heller ingen mening at lave den non-rekursiv, jeg gider jo kun udfylde en delmængde..
+            for i in range(len(self.A)):
+                for j in range(len(self.B)):
+                    for k in range(len(self.C)):
+                        pass
+
+
+
+o = SP_exact_3('AAAA', 'AAAA', 'AAA')
 print(f"""
 A ({o.A})
 B ({o.B})
 C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
 
 align:
-{o._3dprint(o.align(fill_P = False))}
+{o._3dprint(o.align(fill_P = True))}
 
+P
 {o._3dprint(o.P)}
 
 
-
-
-
-
 """)
-#lazittest trashmsaster
+#present the aligned strings.
+for i in o.backtrack(): print(o.decode(i, join = True)[::-1])
