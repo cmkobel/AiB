@@ -121,88 +121,38 @@ A
 
     def backtrack(self):
 
-        #string_a = ''
-        #string_b = ''
-        #string_c = ''
-        def single(i, j, k): # use the self.P 3d-array (cheating a bit haha)
-
+        def single(i, j, k): # use the self.P 3d-array (code reuse)
+            # Base case
             if i == 0 and j == 0 and k == 0: # end reached. return.
                 return '', '', ''
-
-
+            # Moving diagonally
             if self.P[i][j][k] == 1:
                 string_a, string_b, string_c = single(i-1, j-1, k-1)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1]), string_c + str(self.C[k-1])
-
+            # Gap in one string
             if self.P[i][j][k] == 2:
                 string_a, string_b, string_c = single(i-1, j-1, k)
                 return string_a + str(self.A[i-1]), string_b + str(self.B[j-1]), string_c + '-'
-
             if self.P[i][j][k] == 3:
                 string_a, string_b, string_c = single(i-1, j, k-1)
                 return string_a + str(self.A[i-1]), string_b + '-', string_c + str(self.C[k-1])
-
             if self.P[i][j][k] == 4:
                 string_a, string_b, string_c = single(i, j-1, k-1)
                 return string_a + '-', string_b + str(self.B[j-1]), string_c + str(self.C[k-1])
-
-
+            # Gap in two strings
             if self.P[i][j][k] == 5:
                 string_a, string_b, string_c = single(i-1, j, k)
                 return string_a + str(self.A[i-1]), string_b + '-', string_c + '-'
-
             if self.P[i][j][k] == 6:
                 string_a, string_b, string_c = single(i, j-1, k)
                 return string_a + '-', string_b + str(self.B[j-1]), string_c + '-'
-
             if self.P[i][j][k] == 7:
                 string_a, string_b, string_c = single(i, j, k-1)
                 return string_a + '-', string_b + '-', string_c + str(self.C[k-1])
 
-
-
-
-
-
-            
-        def single_from_linear(i, j): # just for inspiration.
-            """ Recursive backtrack. """
-            # old (from linear 2 i suppose)
-            if i > 0 and j > 0 and self.result[i][j] == (self.result[i-1][j-1] + self.score_matrix[self.A[i-1]][self.B[j-1]]):
-                string_a, string_b = single(i-1, j-1)
-                return string_a + str(self.A[i-1]), string_b + str(self.B[j-1])
-            elif i > 0 and j >= 0 and self.result[i][j] == (self.result[i-1][j] + self.a):
-                string_a, string_b = single(i-1, j)
-                return string_a + str(self.A[i-1]), string_b + '-'
-            elif i >= 0 and j > 0 and self.result[i][j] == (self.result[i][j-1] + self.a):
-                string_a, string_b = single(i, j-1)
-                return string_a + '-', string_b + str(self.B[j-1])
-            elif i == 0 and j == 0:
-                return '', ''
-        
-
-
-        def single_what_noP(i, j, k): # this method doesn't use the self.P. What a mess.
-            #new 
-            if i == 0 and j == 0 and k == 0:
-                return '', '', '' # base case
-            if i > 0 and j > 0 and k > 0 and self.T[i][j][k] == (self.T[i-1][j-1][k-1] + self.SM[self.A[i]][self.B[j]] + self.SM[self.B[j]][self.C[k]] + self.SM[self.A[i]][self.C[k]]):
-                string_a, string_b, string_c = single(i-1, j-1, k-1)
-            
-
         return single(len(self.A)-1, len(self.B)-1, len(self.C)-1)
 
 
-
-
-
-        def for_some_reason_i_began_a_non_recursive_version__(): # delete soon..         
-        # det her bliver simpelthen for langhåret. Nu implementerer jeg hele lortet i align(), og så må jeg abstrahere fra en dårlige kørselstid på en anden måde.
-        # Men det giver da heller ingen mening at lave den non-rekursiv, jeg gider jo kun udfylde en delmængde..
-            for i in range(len(self.A)):
-                for j in range(len(self.B)):
-                    for k in range(len(self.C)):
-                        pass
 
 
 
