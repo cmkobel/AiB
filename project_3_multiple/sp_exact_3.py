@@ -69,6 +69,7 @@ A
         I'm assuming this is linear gapcost? 
         regner med at implementere backtracking direkte her. Genvej, nemmere end at lave en backtrack algo ved siden af. Get it over with.
         """
+        
         for i in range(len(self.A)+1):
             for j in range(len(self.B)):
                 for k in range(len(self.C)):
