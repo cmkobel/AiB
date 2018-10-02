@@ -64,7 +64,7 @@ A
 
 
 
-    def align(self, fill_P = False): # todo gives an error if False
+    def align(self, trace = False): # todo gives an error if False
         """ Non-recursive, who gives a duck?
         I'm assuming this is linear gapcost? 
         regner med at implementere backtracking direkte her. Genvej, nemmere end at lave en backtrack algo ved siden af. Get it over with.
@@ -77,43 +77,43 @@ A
 
                     if i == 0 and j == 0 and k == 0: # origo
                         T_cand.append(0)
-                        if fill_P: P_cand.append(0)
+                        if trace: P_cand.append(0)
                     
                     
                     if i > 0 and j > 0 and k > 0: # diag (no gap)
                         T_cand.append(self.T[i-1][j-1][k-1] + self.SM[self.A[i]][self.B[j]] + self.SM[self.B[j]][self.C[k]] + self.SM[self.A[i]][self.C[k]])
-                        if fill_P: P_cand.append(1)
+                        if trace: P_cand.append(1)
                     
                     if i > 0 and j > 0 and k >= 0: # gap in C
                         T_cand.append(self.T[i-1][j-1][k] + self.SM[self.A[i]][self.B[j]] + self.GAP + self.GAP)
-                        if fill_P: P_cand.append(2)
+                        if trace: P_cand.append(2)
                     
                     if i > 0 and j >= 0 and k > 0: # gap in B
                         T_cand.append(self.T[i-1][j][k-1] + self.GAP + self.SM[self.A[i]][self.C[k]] + self.GAP)
-                        if fill_P: P_cand.append(3)
+                        if trace: P_cand.append(3)
                     
                     if i >= 0 and j > 0 and k > 0: # gap in A
                         T_cand.append(self.T[i][j-1][k-1] + self.GAP + self.GAP + self.SM[self.B[j]][self.C[k]])
-                        if fill_P: P_cand.append(4)
+                        if trace: P_cand.append(4)
                     
 
                     if i > 0 and j >= 0 and k >= 0: # gap in B, C
                         T_cand.append(self.T[i-1][j][k] + self.GAP + self.GAP)
-                        if fill_P: P_cand.append(5)
+                        if trace: P_cand.append(5)
                     
                     if i >= 0 and j > 0 and k >= 0: # gap in A, C
                         T_cand.append(self.T[i][j-1][k] + self.GAP + self.GAP)
-                        if fill_P: P_cand.append(6)
+                        if trace: P_cand.append(6)
                     
                     if i >= 0 and j >= 0 and k > 0: # gap in A, B
                         T_cand.append(self.T[i][j][k-1] + self.GAP + self.GAP)
-                        if fill_P: P_cand.append(7)
+                        if trace: P_cand.append(7)
                     #print(f'T at {i, j, k}: {self.T}')
                     #print(f'T_cand at {i, j, k}: {T_cand}')
 
                     selected = min(T_cand)
                     self.T[i][j][k] = selected
-                    if fill_P:
+                    if trace:
                         self.P[i][j][k] = P_cand[T_cand.index(selected)] # find the index of the selected value, and select the P_cand value at the same index (corresponding direction.
                         #print(f'{i, j, k}: {selected} @ {T_cand.index(selected)} in {T_cand}') # for debug.
         return self.T
@@ -163,7 +163,7 @@ B ({o.B})
 C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
 
 align:
-{o._3dprint(o.align(fill_P = True))}
+{o._3dprint(o.align(trace = True))}
 
 P
 {o._3dprint(o.P)}
