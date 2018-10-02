@@ -142,24 +142,26 @@ A
                 string_a, string_b, string_c = single(i, j, k-1)
                 return string_a + '-', string_b + '-', string_c + str(self.C[k-1])
 
-        return single(len(self.A)-1, len(self.B)-1, len(self.C)-1)
+        return single(len(self.A), len(self.B), len(self.C))
 
 
 
 
 
-o = SP_exact_3('AAAA', 'AAA', 'AA')
+o = SP_exact_3('GTTCCGAAAGGCTAGCGCTAGGCGCC',
+               'ATGGATTTATCTGCTCTTCG',
+               'TGCATGCTGAAACTTCTCAACCA')
 print(f"""
 A ({o.A})
 B ({o.B})
 C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
 
 align:
-{o._3dprint(o.align(trace = False))}
-"""
-#P
+{o._3dprint(o.align(trace = True))}
+
+P
 #{o._3dprint(o.P)}
-"""
+
 """)
 #present the aligned strings.
-#for i in o.backtrack(): print(o.decode(i, join = True)[::-1])
+for i in o.backtrack(): print(o.decode(i, join = True)[::1])
