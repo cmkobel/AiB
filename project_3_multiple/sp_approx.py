@@ -1,6 +1,7 @@
 # Author: Carl M. Kobel 2018
 
-# Implements the 2-approximation algorithm for any number of sequences (described in Section 8.2.2 in BA, or in Section 14.6.2 in Gusfield's book).
+# Implements the 2-approximation algorithm for any number of sequences
+#(described in Section 8.2.2 in BA, or in Section 14.6.2 in Gusfield's book).
 
 """
 Procedure
@@ -16,6 +17,22 @@ Procedure
 
 
 class SP_approx:
+    def encode(self, input):
+        """ Take a string 'ACGT', returns a list of numbers [0, 1, 2, 3]"""
+        mapping = {letter: index for index, letter in enumerate(self.ALPHABET)}
+        return [mapping[i] for i in str(input).upper()]
+   
+    def decode_string(self, input, join = False):
+        """ Takes a string '0123-' or ['0','1','2','3', '-'] returns a list of letters ['A', 'C'..] or 'AC' if join is true
+        """
+        demapping = {str(index): letter for index, letter in enumerate(self.ALPHABET)}
+        demapping['-'] = '-' # add the gap 'letter'
+        if join:
+            return ''.join([demapping[i] for i in input])
+        else:
+            return [demapping[i] for i in input]
+    
+
     def __init__(self, sequences):
         #self.SEQUENCES = sequences
         self.ALPHABET = ['A', 'C', 'G', 'T']
@@ -27,33 +44,21 @@ class SP_approx:
                    [2, 5, 0, 5],
                    [5, 2, 5, 0]]
 
-
         
-        
+        self.SEQUENCES = [self.encode(i) for i in sequences]
 
 
-        def encode(input):
-            """ Take a string 'ACGT', returns a list of numbers [0, 1, 2, 3]"""
-            mapping = {letter: index for index, letter in enumerate(self.ALPHABET)}
-            return [mapping[i] for i in str(input).upper()]
-        
-        self.SEQUENCES = [encode(i) for i in sequences]
 
-    def decode(self, input, join = False):
-        """ Takes a string '0123-', returns a list of letters ['A', 'C'..] or 'AC' if join is true
-        todo: make a decode function that iterates through a list as well, so you have decode_string() this and decode_list() new."""
-        demapping = {str(index): letter for index, letter in enumerate(self.ALPHABET)}
-        demapping['-'] = '-' # add the gap 'letter'
-        if join:
-            return ''.join([demapping[i] for i in input])
-        else:
-            return [demapping[i] for i in input]
-
-                                                                                                100.                120.
-    def pair_score(self, seq_A, seq_B):
+    def levenshtein_dist(self, seq_A, seq_B):
         """ Takes two sequences A and B, and returns the score of the optimal alignment. """
-        gap, sm = self.GAP, self.SM
-        result = [[None for i in range(len(seq_B) + 1)] for i in range(len(seq_A) + 1)]
+        #gap, sm = self.GAP, self.SM
+        gap = 1
+        sm = [[0, 1, 1, 1], # Substitution Matrix
+              [1, 0, 1, 1],
+              [1, 1, 0, 1],
+              [1, 1, 1, 0]]
+
+        result = [[None for i in range(len(seq_B)+1)] for i in range(len(seq_A)+1)]
         def score(i, j):
             if result[i][j] != None:
                 return result[i][j]
@@ -68,27 +73,50 @@ class SP_approx:
         return(score(len(seq_A), len(seq_B)))
 
         
+    def center_string_index(self):
+        def distance_matrix():
+            """ To find center string
+            Takes O(n^2) for the k(k-1) pairs of strings
+            Makes something that looks like the table in the bottom of page 411
+            """
+            m = len(self.SEQUENCES)
+            rv = [[0 for i in range(m)] for i in range(m)]
+            for i in range(0, m):
+                for j in range(1, m):
+                    if i < j:
+                        score = self.levenshtein_dist(self.SEQUENCES[i], self.SEQUENCES[j])
+                        #print(i,j, score) 
+                        rv[i][j] = score
+                        rv[j][i] = score # fill the table symmetrically, makes it easier to later calculate the sums.
+            #print('dist matrix',rv) # debug
+            return rv
 
-    def calculate_all_pairwise_distances(self):
-        """ To find center string
-        Takes O(n^2) for the k(k-1) pairs of strings
+        # Calculate the score sums of distances to other strings, for each string.
+        sums = [sum(i) for i in distance_matrix()]
+        #print('sums', sums) # debug
 
-        """
-        # Til det skal jeg nok bruge noget kode der giver cost af to strenge. Kig i uge 1 eller 2
-        pass
+        # Find the index of the minimum sum. That is the index of the center string.
+        min_idx = sums.index(min(sums))
+        #print('idx', min_idx) # debug
 
+        return min_idx
 
-    def align_pairs_S1_Si(self):
+    def build_alignment(self):
+        """ Represents pairwise alignment of all pairs of strings Sc Si for all n>1 """
         pass
 
     def calculate_sum_of_pairs_score_of_alignments(self):
+        """ final distance calculation
+        how to do it ? """
         pass
 
 
-seq_set_from_book_8_2_2 = ['AGTAATGG',
-                           'TTTAATGA',
-                           'AAGAAATGG',
-                           'ATAAAATGG']
+seq_set_sole = [
+    'AGTAATGG',
+    'TTTAATGA',
+    'AAGAAATGG',
+    'ATAAAATGG',
+]
 
 seq_set_case1_fasta = ['acgtgtcaacgt',
                        'acgtcgtagcta'] # 22
@@ -109,10 +137,13 @@ gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
 
 
-o = SP_approx(seq_set_case4_fasta)
+o = SP_approx(seq_set_sole)
 
 # debug
 #for n, i in enumerate(o.SEQUENCES):
 #    print(f'seq_{n}: {i}')
-print(o.pair_score(o.SEQUENCES[0], o.SEQUENCES[1]))
 
+# test levenshtein_dist
+#print(o.levenshtein_dist(o.SEQUENCES[0], o.SEQUENCES[1]))
+
+print('csi', o.center_string_index())
