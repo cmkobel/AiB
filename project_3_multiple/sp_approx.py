@@ -10,9 +10,6 @@ Procedure
         · Genbrug kode fra tidligere.
     · Align alle par: S1 - Si over alle i+1 ... n
 
-
-
-
 """
 
 
@@ -22,7 +19,7 @@ class SP_approx:
         mapping = {letter: index for index, letter in enumerate(self.ALPHABET)}
         return [mapping[i] for i in str(input).upper()]
    
-    def decode_string(self, input, join = False):
+    def decode(self, input, join = False):
         """ Takes a string '0123-' or ['0','1','2','3', '-'] returns a list of letters ['A', 'C'..] or 'AC' if join is true
         """
         demapping = {str(index): letter for index, letter in enumerate(self.ALPHABET)}
@@ -34,23 +31,23 @@ class SP_approx:
     
 
     def __init__(self, sequences):
-        #self.SEQUENCES = sequences
         self.ALPHABET = ['A', 'C', 'G', 'T']
+        self.SEQUENCES = [self.encode(i) for i in sequences]
         self.GAP = 5
-
+        
         #           A  C  G  T 
-        self.SM = [[0, 5, 2, 5], # Substitution Matrix
-                   [5, 0, 5, 2],
-                   [2, 5, 0, 5],
-                   [5, 2, 5, 0]]
+        self.SM = [[0, 5, 2, 5], # A
+                   [5, 0, 5, 2], # C
+                   [2, 5, 0, 5], # G
+                   [5, 2, 5, 0]] # T
 
         
-        self.SEQUENCES = [self.encode(i) for i in sequences]
-
-
 
     def levenshtein_dist(self, seq_A, seq_B):
-        """ Takes two sequences A and B, and returns the score of the optimal alignment. """
+        """ Takes two sequences A and B, and returns the levenshtein distance. 
+        Actually, it is not defined exactly as the levenshtein distance, because it has a gap parameter, but it 
+        calculates something that is equivalent to it for the used range of inputs."""
+        
         #gap, sm = self.GAP, self.SM
         gap = 1
         sm = [[0, 1, 1, 1], # Substitution Matrix
@@ -70,7 +67,18 @@ class SP_approx:
                 if (i == 0) and (j == 0): candidates.append(0)
                 result[i][j] = min(candidates)
                 return result[i][j]
-        return(score(len(seq_A), len(seq_B)))
+
+        rv = score(len(seq_A), len(seq_B))
+        #print('o', result) # debug
+        return rv
+
+    def align(self):
+        """ remember that levenshtein is a special case of align with a special SM """
+
+
+    def backtrack(self):
+        """ self plagiarize """
+        pass
 
         
     def center_string_index(self):
@@ -88,7 +96,7 @@ class SP_approx:
                         #print(i,j, score) 
                         rv[i][j] = score
                         rv[j][i] = score # fill the table symmetrically, makes it easier to later calculate the sums.
-            #print('dist matrix',rv) # debug
+            #print('dist matrix', rv) # debug
             return rv
 
         # Calculate the score sums of distances to other strings, for each string.
@@ -101,9 +109,52 @@ class SP_approx:
 
         return min_idx
 
+    def max_num_gaps(self, string):
+        return 1
+        #return 5
+
     def build_alignment(self):
         """ Represents pairwise alignment of all pairs of strings Sc Si for all n>1 """
-        pass
+
+        def pad(input, g):
+            """ Inserts g gaps around all letters in the input """
+            rv = g * '-'
+            for i in input:
+                rv += i + g * '-'
+            input = rv
+            return rv
+            
+        
+        center_star = ['A', 'C', 'T']
+        print(center_star)
+
+        # Pad the center star with dashes
+        center_star = pad(center_star, self.max_num_gaps('all_pairs_of_pairwise_alignments()'))
+        
+
+        pairwise_alignments = [[['A', 'C', '-', 'T'],
+                       ['A', '-', 'T', 'T']],
+                      [['A', 'C', '-', 'T'],
+                       ['A', 'T', 'G', 'T']]]
+        
+        print(center_star)
+
+        complete_alignment = list()
+        for n_i, i in enumerate(pairwise_alignments):
+            for n_j, j in enumerate(i[1]):
+                print(n_i, n_j, j)
+                complete_alignment[i][j]
+
+
+
+        # s
+        
+        rv = [[]]
+
+
+
+
+
 
     def calculate_sum_of_pairs_score_of_alignments(self):
         """ final distance calculation
@@ -117,6 +168,8 @@ seq_set_sole = [
     'AAGAAATGG',
     'ATAAAATGG',
 ]
+
+#seq_set_simple = ['ACT']
 
 seq_set_case1_fasta = ['acgtgtcaacgt',
                        'acgtcgtagcta'] # 22
@@ -139,11 +192,15 @@ gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
 o = SP_approx(seq_set_sole)
 
-# debug
-#for n, i in enumerate(o.SEQUENCES):
+# test encoded strings
+#for n, i in enumerate(o.SEQUENCES): 
 #    print(f'seq_{n}: {i}')
+
 
 # test levenshtein_dist
 #print(o.levenshtein_dist(o.SEQUENCES[0], o.SEQUENCES[1]))
 
-print('csi', o.center_string_index())
+# test center index identification
+#print('csi', o.center_string_index())
+
+o.build_alignment()
