@@ -49,12 +49,11 @@ class SP_approx:
         else:
             return [demapping[i] for i in input]
 
-
+                                                                                                100.                120.
     def pair_score(self, seq_A, seq_B):
-        """ Takes two sequences A and B, and returns the score of optimal alignment """
+        """ Takes two sequences A and B, and returns the score of the optimal alignment. """
         gap, sm = self.GAP, self.SM
         result = [[None for i in range(len(seq_B) + 1)] for i in range(len(seq_A) + 1)]
-        
         def score(i, j):
             if result[i][j] != None:
                 return result[i][j]
