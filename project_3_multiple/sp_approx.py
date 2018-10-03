@@ -51,38 +51,22 @@ class SP_approx:
 
 
     def pair_score(self, seq_A, seq_B):
-        """ Takes two sequences A and B, and returns the score of optimal alignment
-        """
-        
+        """ Takes two sequences A and B, and returns the score of optimal alignment """
+        gap, sm = self.GAP, self.SM
         result = [[None for i in range(len(seq_B) + 1)] for i in range(len(seq_A) + 1)]
-        # maybe you want to specify something different?
-        gap = self.GAP
-        sm = self.SM
         
-        def score_recursive(i, j):
-        #print(f'{i},{j}  ', end = '') # debug
-        
-            # Has it already been calculated?
+        def score(i, j):
             if result[i][j] != None:
                 return result[i][j]
-
-            # if not, calculate it..
             else:
                 candidates = []
-
-                if (i > 0) and (j > 0): # Diagonally
-                    candidates.append(score_recursive(i-1, j-1) + sm[int(seq_A[i-1])][int(seq_B[j-1])])
-                if (i > 0) and (j >= 0): # Left
-                    candidates.append(score_recursive(i-1, j) + gap)
-                if (i >= 0) and (j > 0): # Up
-                    candidates.append(score_recursive(i, j-1) + gap)
-                if (i == 0) and (j == 0): # Base case
-                    candidates.append(0) # ?
-
+                if (i > 0) and (j > 0): candidates.append(score(i-1, j-1) + sm[seq_A[i-1]][seq_B[j-1]])
+                if (i > 0) and (j >= 0): candidates.append(score(i-1, j) + gap)
+                if (i >= 0) and (j > 0): candidates.append(score(i, j-1) + gap)
+                if (i == 0) and (j == 0): candidates.append(0)
                 result[i][j] = min(candidates)
                 return result[i][j]
-
-        return(score_recursive(len(seq_A), len(seq_B)))
+        return(score(len(seq_A), len(seq_B)))
 
         
 
@@ -127,7 +111,9 @@ gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
 
 o = SP_approx(seq_set_case4_fasta)
-for n, i in enumerate(o.SEQUENCES):
-    print(f'seq_{n}: {i}')
+
+# debug
+#for n, i in enumerate(o.SEQUENCES):
+#    print(f'seq_{n}: {i}')
 print(o.pair_score(o.SEQUENCES[0], o.SEQUENCES[1]))
 
