@@ -1,15 +1,17 @@
+SM = [[0, 5, 2, 5], # Substitution Matrix
+      [5, 0, 5, 2],
+      [2, 5, 0, 5],
+      [5, 2, 5, 0]]
+ALPHABET = ['A', 'C', 'G', 'T']
+GAP = 5
 
 center_string = ['A', 'C', 'T']
 
 aligned_pairs = [
-                 [['A', 'C', 'T', '-'],
-                  ['C', '-', 'C', 'T']],
-                 [['A', 'C', '-', 'T'],
-                  ['A', '-', 'T', 'T']],
-                 [['A', 'C', '-', 'T'],
-                  ['T', 'G', 'T', 'T']],
+[['A', 'C', 'T'], ['A', 'T', 'T']], [['-', 'A', 'C', 'T'], ['A', 'A', 'G', 'G']]
+                ]
 
-                  ]
+
 
 
 def count_gaps_in_center_string(center_string, aligned_pairs):
@@ -66,9 +68,7 @@ def align_multiple(center_string, aligned_pairs):
                     lag += 1 
     return msa
 
-
-
-
+# debug printing:
 msa = align_multiple(center_string, aligned_pairs)
 print('\n\nfinal msa:')
 for i, i_val in enumerate(msa):
@@ -77,15 +77,33 @@ for i, i_val in enumerate(msa):
         print(f'{j}  ', end = '')
     print()
 
-# print('\ncomb')
-# #sum_list = [0 for i in range(len(center_string))]
-# for i in range(len(center_string)): # kolonner i msa
-#     for j in range(len(msa)):
-#         for k in range(1, len(msa)-1):
-#             if j < k:
-#                 print(j,k, end = '')
-#             print()
 
+print('\ncomb')
+sum_list = [0 for i in range(len(center_string))] # just to validate the values one column at a time. In the end, a sum value can just be sum += value
+grand_total = 0
+cols = len(center_string)
+rows = len(msa)
+for i in range(cols): # kolonner i msa
+    for j in range(rows):
+        for k in range(rows):
+            if j < k:
+                first = msa[j][i]
+                second = msa[k][i]
+                print(i,' ', j, k, first, second)
+                sum = 0
+                if first == '-' and second == '-':
+                    continue
+                elif first == '-' or second == '-':
+                    sum += GAP
+                else:
+                    sum += SM[ALPHABET.index(first)][ALPHABET.index(second)]
+                sum_list[i] += sum
+                grand_total += sum
+    
+    print()
+
+print(sum_list)
+print(grand_total)
 
 
 

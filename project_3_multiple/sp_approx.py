@@ -129,14 +129,7 @@ class SP_approx:
 
     def build_alignment(self, center_string_index):
         """ Represents pairwise alignment of all pairs of strings Sc Si for all n>1.
-        Take note, that the center string must be the first one."""
-        def pad(input, g):
-            """ Inserts g gaps around all letters in the input """
-            rv = g * '-'
-            for i in input:
-                rv += i + g * '-'
-            return [i for i in rv]
-
+        """
 
         m = len(self.SEQUENCES)
         aligned_pairs = []
@@ -145,57 +138,120 @@ class SP_approx:
                 aligned_pairs.append( o.backtrack(self.SEQUENCES[center_string_index], self.SEQUENCES[i], self.align(self.SEQUENCES[center_string_index], self.SEQUENCES[i])) )
 
 
-        center_string = pad([i for i in map(str, self.SEQUENCES[center_string_index])], 1)
-        aligned_pairs = [[[nuc for nuc in seq] for seq in pair] for pair in aligned_pairs]
-        msa = [[i for i in center_string]] + [['' for i in range(len(center_string))] for i in range(m-1)]
-        #print('center_string', center_string)
-        print('pairs:')
-        for i in aligned_pairs:
-            for j in i:
-                print(j)
-            print()
-        #print('empty msa', msa)
-        #print(aligned_pairs)
-
-
-        print('--- build ---')
-        for pair_num, pair in enumerate(aligned_pairs):
-            print(pair_num, pair)
-            col_pointer = 0
-            while True:
-                
-                
-            
-
-        # pretty print msa
-        print('\n\nmsa')
-        for i in msa:
-            print(i)
-
-
-
-
-
-
-
-
+        center_string = [i for i in map(str, self.SEQUENCES[center_string_index])]
+        center_string = self.decode(center_string)
+        #print('center-string',center_string) # debug ba
         
-        # center_string = ['A', 'C', 'T']
-        # print(center_string)
-        # # Pad the center star with dashes
-        # center_string = pad(center_string, self.max_num_gaps('all_pairs_of_pairwise_alignments()'))
-        # pairwise_alignments = [[['A', 'C', '-', 'T'],
-        #                ['A', '-', 'T', 'T']],
-        #               [['A', 'C', '-', 'T'],
-        #                ['A', 'T', 'G', 'T']]]
-        # print(center_string)
-        # complete_alignment = list()
-        # for n_i, i in enumerate(pairwise_alignments):
-        #     for n_j, j in enumerate(i[1]):
-        #         print(n_i, n_j, j)
-        #         complete_alignment[i][j]
-        # # s
-        # rv = [[]]
+        aligned_pairs = [[self.decode(i) for i in j] for j in aligned_pairs]
+        #print('al', aligned_pairs) # debug ba
+
+
+
+
+        def count_gaps_in_center_string(center_string, aligned_pairs):
+            gap_at_idx = [[0 for i in range(len(aligned_pairs))] for i in range(len(center_string)+1)] # note: transposed!! ..bad idea I guess.
+            for pair_idx, pair in enumerate(aligned_pairs):
+                cum_sum = 0
+                for i_idx, i_value in enumerate(pair[0]):
+                    if i_value == '-':
+                        gap_at_idx[i_idx - cum_sum][pair_idx] += 1
+                        cum_sum += 1
+
+            ##print('gap_at_idx:', gap_at_idx) # debug # debug ba
+
+            rv = [0 for i in range(len(center_string)+1)]
+            for i_idx, i in enumerate(gap_at_idx):
+                rv[i_idx] = max(i)
+
+            return rv
+
+
+        dash_list = count_gaps_in_center_string(center_string, aligned_pairs)
+        #print('dash_list:', dash_list) # debug ba
+
+        def expand_center_string_with_gaps(center_string, dash_list):
+            rv = '-' * dash_list[0]
+            for idx, letter in enumerate(center_string):
+                rv += letter
+                rv += '-' * dash_list[idx+1]
+            return [i for i in rv]
+
+        center_string = expand_center_string_with_gaps(center_string, dash_list)
+        #print('cs', center_string) # debug ba
+
+        """
+        Så, nu er center strengen udvidet med gaps så meget som den behøver.
+        Nu kan vi gå i gang med at lave vores multiple alignment.
+        """
+
+
+
+        def align_multiple(center_string, aligned_pairs):
+            msa = [center_string] + [[None for i in range(len(center_string))] for i in range(len(aligned_pairs))] # alloker fuld størrelse af msa
+            #print('msa', msa) # debug ba
+            for i, i_val in enumerate(aligned_pairs): # for hvert par ..
+                lag = 0
+                for j, j_val in enumerate(center_string): # .. gå igennem hver position i den paddede centerstreng
+                    ##print(j, i_val[0][j-lag], j_val, end = ' ' * 4) # debug ba
+                    #print(i, j) # debug ba
+                    if i_val[0][j-lag] != j_val:
+                        msa[i+1][j] = '-'
+                        lag += 1
+                    else:
+                        msa[i+1][j] = i_val[1][j-lag]
+                        if j-lag+1 == len(i_val[1]): # hvis vi har skrevet det sidste element, så sørg for at vi ikke går over range i S^i
+                            lag += 1 
+            return msa
+
+        # ## debug printing: # debug ba
+        msa = align_multiple(center_string, aligned_pairs)
+        # #print('\n\nfinal msa:') # debug ba
+        # for i, i_val in enumerate(msa):
+        #     #print(i, end = ') ') # debug ba
+        #     for j in i_val:
+        #         #print(f'{j}  ', end = '') # debug ba
+        #     #print() # debug ba
+       
+
+
+        #print('\ncomb') # debug ba
+        sum_list = [0 for i in range(len(center_string))] # just to validate the values one column at a time. In the end, a sum value can just be sum += value
+        grand_total = 0
+        cols = len(center_string)
+        rows = len(msa)
+        for i in range(cols): # kolonner i msa
+            for j in range(rows):
+                for k in range(rows):
+                    if j < k:
+                        first = msa[j][i]
+                        second = msa[k][i]
+                        #print(i,' ', j, k, first, second) # debug ba
+                        sum = 0
+                        if first == '-' and second == '-':
+                            continue
+                        elif first == '-' or second == '-':
+                            sum += self.GAP
+                        else:
+                            sum += self.SM[self.ALPHABET.index(first)][self.ALPHABET.index(second)]
+                        sum_list[i] += sum
+                        grand_total += sum
+            
+            #print() # debug ba
+
+        #print(sum_list) # debug ba
+        #print(grand_total) # debug ba
+
+        return msa, grand_total
+
+
+
+
+
+
+
+
+
+
 
 
     def calculate_sum_of_pairs_score_of_alignments(self):
@@ -212,8 +268,8 @@ seq_set_sole = [
 ]
 
 seq_set_sole_short = [
-    'AGT',
-    'TTT',
+    'ACT',
+    'ATT',
     'AAGG',
 ]
 
@@ -232,7 +288,7 @@ tcgtctgtttacgtataaacagaatcgcctgggttcgc',
 gccagacctacaagtactagacctgagaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtca\
 gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
-o = SP_approx(seq_set_sole_short)
+o = SP_approx(seq_set_sole)
 
 # test encoded strings
 #for n, i in enumerate(o.SEQUENCES): 
@@ -250,7 +306,6 @@ o = SP_approx(seq_set_sole_short)
 # test center index identification
 csi = o.center_string_index()
 #print('csi', csi)
-# byt rundt, så 
 
 # test building alignment
-o.build_alignment(csi)
+print(o.build_alignment(csi))
