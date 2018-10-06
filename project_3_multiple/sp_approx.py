@@ -1,3 +1,4 @@
+from Bio import SeqIO
 # Author: Carl M. Kobel 2018
 
 # Implements the 2-approximation algorithm for any number of sequences
@@ -28,9 +29,19 @@ class SP_approx:
             return [demapping[i] for i in input]
     
 
-    def __init__(self, sequences):
+    def __init__(self, fasta_file):
+        
+        def get_sequences(input_file):
+            fasta_seqs = SeqIO.parse(input_file,'fasta')
+            try:
+                rv = (str(i.seq) for i in fasta_seqs)
+                return rv
+            except ValueError:
+                print(f'Fasta-file {input_file} must has an error?')
+        
+
         self.ALPHABET = ['A', 'C', 'G', 'T']
-        self.SEQUENCES = [self.encode(i) for i in sequences]
+        self.SEQUENCES = [self.encode(i) for i in get_sequences(fasta_file)]
         self.GAP = 5
         
         #           A  C  G  T 
@@ -38,6 +49,10 @@ class SP_approx:
                    [5, 0, 5, 2], # C
                    [2, 5, 0, 5], # G
                    [5, 2, 5, 0]] # T
+
+
+
+
         
 
     def align(self, seq_A, seq_B, substitution_matrix = None, gap = None):
@@ -135,7 +150,7 @@ class SP_approx:
         aligned_pairs = []
         for i in range(m):
             if i != center_string_index:
-                aligned_pairs.append( o.backtrack(self.SEQUENCES[center_string_index], self.SEQUENCES[i], self.align(self.SEQUENCES[center_string_index], self.SEQUENCES[i])) )
+                aligned_pairs.append( self.backtrack(self.SEQUENCES[center_string_index], self.SEQUENCES[i], self.align(self.SEQUENCES[center_string_index], self.SEQUENCES[i])) )
 
 
         center_string = [i for i in map(str, self.SEQUENCES[center_string_index])]
@@ -288,24 +303,11 @@ tcgtctgtttacgtataaacagaatcgcctgggttcgc',
 gccagacctacaagtactagacctgagaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtca\
 gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
-o = SP_approx(seq_set_sole)
-
-# test encoded strings
-#for n, i in enumerate(o.SEQUENCES): 
-#    print(f'seq_{n}: {i}')
 
 
-# # test align
-# seqs = o.SEQUENCES[0], o.SEQUENCES[1]
-# alignment_table = o.align(seqs[0], seqs[1])
-# print(alignment_table)
-# print('---')
-# print(o.backtrack(seqs[0], seqs[1], alignment_table))
 
 
-# test center index identification
-csi = o.center_string_index()
-#print('csi', csi)
+#o = SP_approx('data/testseqs/testseqs_20_3.fasta')
+#csi = o.center_string_index()
 
-# test building alignment
-print(o.build_alignment(csi))
+#print(o.build_alignment(csi)[1])

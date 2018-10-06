@@ -1,13 +1,20 @@
+from Bio import SeqIO
 # Author: Carl M. Kobel 2018
 
 # Implements the exact algorithm for computing an optimal MSA of 3 sequences and its score (described on page 408 in BA, or in section 16.6.1 in Gusfield's book).
 
 class SP_exact_3:
-    def __init__(self, A, B, C):
+    def __init__(self, fasta_file):
+        def get_sequences(input_file):
+            fasta_seqs = SeqIO.parse(input_file,'fasta')
+            try:
+                seqa, seqb, seqc = (str(i.seq) for i in fasta_seqs)
+            except ValueError:
+                print(f'Fasta-file {input_file} must contain exactly three sequences.')
+            return (seqa, seqb, seqc)
+
         self.ALPHABET = ['A', 'C', 'G', 'T']
-        self.A = self.encode(A)
-        self.B = self.encode(B)
-        self.C = self.encode(C)
+        self.A, self.B, self.C = (self.encode(i) for i in get_sequences(fasta_file))
         self.GAP = 5
         self.T = [[[None for i in range(len(self.C)+1)] for i in range(len(self.B)+1)] for i in range(len(self.A)+1)]
         self.P = [[[None for i in range(len(self.C)+1)] for i in range(len(self.B)+1)] for i in range(len(self.A)+1)]
@@ -148,25 +155,7 @@ A
 
 
 
-o = SP_exact_3('GTTCCGAAAGGCTAGCGCTAGGCGCC',
-               'ATGGATTTATCTGCTCTTCG',
-               'TGCATGCTGAAACTTCTCAACCA')
+# o = SP_exact_3('data/testseqs/testseqs_20_3.fasta')
+# score = o.align(trace = True)[len(o.A)][len(o.B)][len(o.C)]
 
-o = SP_exact_3('GTTCCGAAAGGCTAGCGCTAGGCGCCAAGCGGCCGGTTTCCTTGGCGACGGAGAGCGCGGGAATTTTAGATAGATTGTAATTGCGGCTGCGCGGCCGCTGCCCGTGCAGCCAGAGGATCCAGCACCTCTCTTGGGGCTTCTCCGTCCTCGGCGCTTGGAAGTACGGATCTTTTTTCTCGGAGAAAAGTTCACTGGAACTG',
-               'ATGGATTTATCTGCTCTTCGCGTTGAAGAAGTACAAAATGTCATTAACGCTATGCAGAAAATCTTAGAGTGTCCCATCTGTCTGGAGTTGATCAAGGAACCTGTCTCCACAAAGTGTGACCACATATTTTGCAAATTTTGCATGCTGAAACTTCTCAACCAGAAGAAAGGGCCTTCACAGTGTCCTTTATGTAAGAATGA',
-               'CGCTGGTGCAACTCGAAGACCTATCTCCTTCCCGGGGGGGCTTCTCCGGCATTTAGGCCTCGGCGTTTGGAAGTACGGAGGTTTTTCTCGGAAGAAAGTTCACTGGAAGTGGAAGAAATGGATTTATCTGCTGTTCGAATTCAAGAAGTACAAAATGTCCTTCATGCTATGCAGAAAATCTTGGAGTGTCCAATCTGTTT')
 
-print(f"""
-A ({o.A})
-B ({o.B})
-C ({o.C}) {''.join([o.decode(str(i), join = True) for i in o.C])}
-
-align:
-""")
-o.align(trace = True)
-
-#{o._3dprint(o.P)}
-"""
-"""
-#present the aligned strings.
-for i in o.backtrack(): print(o.decode(i, join = True)[::1])
