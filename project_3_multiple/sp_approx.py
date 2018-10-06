@@ -307,7 +307,8 @@ gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
 
 
 
-#o = SP_approx('data/testseqs/testseqs_20_3.fasta')
-#csi = o.center_string_index()
+o = SP_approx('data/brca1-full.fasta')
+csi = o.center_string_index()
+print(csi)
 
-#print(o.build_alignment(csi)[1])
+print(o.build_alignment(csi)[1])
