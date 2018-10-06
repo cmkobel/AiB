@@ -1,10 +1,15 @@
 
 center_string = ['A', 'C', 'T']
 
-aligned_pairs = [[['A', 'C', '-', 'T'],
+aligned_pairs = [
+                 [['A', 'C', 'T', '-'],
+                  ['C', '-', 'C', 'T']],
+                 [['A', 'C', '-', 'T'],
                   ['A', '-', 'T', 'T']],
-                 [['A', '-', 'C', 'T'],
-                  ['-', 'T', 'G', 'T']]]
+                 [['A', 'C', '-', 'T'],
+                  ['T', 'G', 'T', 'T']],
+
+                  ]
 
 
 def count_gaps_in_center_string(center_string, aligned_pairs):
@@ -46,31 +51,40 @@ Nu kan vi gå i gang med at lave vores multiple alignment.
 
 def align_multiple(center_string, aligned_pairs):
     msa = [center_string] + [[None for i in range(len(center_string))] for i in range(len(aligned_pairs))] # alloker fuld størrelse af msa
+    print('msa', msa)
     for i, i_val in enumerate(aligned_pairs): # for hvert par ..
-        j_offset = 0
+        lag = 0
         for j, j_val in enumerate(center_string): # .. gå igennem hver position i den paddede centerstreng
-            print(j, i_val[0][j-j_offset], j_val, end = ' ' * 5)
-            if i_val[0][j-j_offset] != j_val:
-                msa[i+1][j-j_offset] = '-'
-                j_offset += 1
+            #print(j, i_val[0][j-lag], j_val, end = ' ' * 4)
+            print(i, j)
+            if i_val[0][j-lag] != j_val:
+                msa[i+1][j] = '-'
+                lag += 1
             else:
-                msa[i+1][j] = i_val[1][j-j_offset]
+                msa[i+1][j] = i_val[1][j-lag]
+                if j-lag+1 == len(i_val[1]): # hvis vi har skrevet det sidste element, så sørg for at vi ikke går over range i S^i
+                    lag += 1 
     return msa
 
 
 
 
 msa = align_multiple(center_string, aligned_pairs)
-print('\nfinal msa:')
+print('\n\nfinal msa:')
 for i, i_val in enumerate(msa):
     print(i, end = ') ')
     for j in i_val:
         print(f'{j}  ', end = '')
     print()
 
-sum_list = [0 for i in range(len(center_string))]
-for i in msa:
-
+# print('\ncomb')
+# #sum_list = [0 for i in range(len(center_string))]
+# for i in range(len(center_string)): # kolonner i msa
+#     for j in range(len(msa)):
+#         for k in range(1, len(msa)-1):
+#             if j < k:
+#                 print(j,k, end = '')
+#             print()
 
 
 
