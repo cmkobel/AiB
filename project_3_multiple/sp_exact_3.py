@@ -9,9 +9,9 @@ class SP_exact_3:
             fasta_seqs = SeqIO.parse(input_file,'fasta')
             try:
                 seqa, seqb, seqc = (str(i.seq) for i in fasta_seqs)
+                return (seqa, seqb, seqc)
             except ValueError:
                 print(f'Fasta-file {input_file} must contain exactly three sequences.')
-            return (seqa, seqb, seqc)
 
         self.ALPHABET = ['A', 'C', 'G', 'T']
         self.A, self.B, self.C = (self.encode(i) for i in get_sequences(fasta_file))
@@ -69,7 +69,7 @@ A
 
 
 
-    def align(self, trace = False): # todo gives an error if False
+    def align(self, trace = False, full_table = False): # todo gives an error if False
         """ Non-recursive, because that is why.
         Assuming linear gapcost.
         backtracking er implementeret direkte her. Genvej, nemmere end at lave en backtrack algo ved siden af. Get it over with.
@@ -115,7 +115,10 @@ A
                     if trace:
                         self.P[i][j][k] = P_cand[T_cand.index(selected)] # find the index of the selected value, and select the P_cand value at the same index (corresponding direction.
                         #print(f'{i, j, k}: {selected} @ {T_cand.index(selected)} in {T_cand}') # for debug.
-        return self.T
+        if full_table:
+            return self.T
+        else:
+            return self.T[-1][-1][-1]
 
 
     def backtrack(self):
@@ -149,13 +152,26 @@ A
                 string_a, string_b, string_c = single(i, j, k-1)
                 return string_a + '-', string_b + '-', string_c + str(self.C[k-1])
 
-        return single(len(self.A), len(self.B), len(self.C))
+        rv = single(len(self.A), len(self.B), len(self.C))
+        return [[''.join(self.decode(j)) for j in i] for i in rv]
 
 
 
 
 
-# o = SP_exact_3('data/testseqs/testseqs_20_3.fasta')
-# score = o.align(trace = True)[len(o.A)][len(o.B)][len(o.C)]
+def example():
+    """ Example of how to use this program """
+    # Instantiate the class with a fasta file containing exactly 3 sequences.
+    o = SP_exact_3('data/testseqs/testseqs_10_3.fasta')
+    # print the score of an optimal alignment using the substitution matrix hardcoded into the class
+    print(o.align())
+    
+    # if you want to return the full dynamic programming table you may run
+    print(o.align(full_table = True))
 
+    # if you want an optimal alignment you may run
+    o.align(trace = True) 
+    # to fill a tracing matrix used when backtrack() is called:
+    print(o.backtrack())
 
+#example()

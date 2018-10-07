@@ -109,7 +109,7 @@ class SP_approx:
         return list(recursive(len(seq_A), len(seq_B)))
 
 
-    def center_string_index(self):
+    def find_center_string_index(self):
         def distance_matrix():
             """ Retuns the index of the center string Sc
             Takes O(n^2) for the k(k-1) pairs of strings
@@ -142,9 +142,11 @@ class SP_approx:
         #return 5
 
 
-    def build_alignment(self, center_string_index):
+    def build_alignment(self):
         """ Represents pairwise alignment of all pairs of strings Sc Si for all n>1.
         """
+
+        center_string_index = self.find_center_string_index()
 
         m = len(self.SEQUENCES)
         aligned_pairs = []
@@ -259,56 +261,18 @@ class SP_approx:
         return msa, grand_total
 
 
+def example():
+    """ How to use this program """
+    # Instantiate the class with a faste file containing any number of sequences
+    o = SP_approx('data/brca1-testseqs.fasta')
+
+    # build_alignment() returns a tuple of the multiple sequence alignment, and the score
+
+    # print the msa
+    print(o.build_alignment()[0])
+
+    #print the score of the msa
+    print(o.build_alignment()[1])
 
 
-
-
-
-
-
-
-
-
-    def calculate_sum_of_pairs_score_of_alignments(self):
-        """ final distance calculation
-        I'm not sure how to do it. """
-        pass
-
-
-seq_set_sole = [
-    'AGTAATGG',
-    'TTTAATGA',
-    'AAGAAATGG',
-    'ATAAAATGG',
-]
-
-seq_set_sole_short = [
-    'ACT',
-    'ATT',
-    'AAGG',
-]
-
-#seq_set_simple = ['ACT']
-
-seq_set_case1_fasta = ['acgtgtcaacgt',
-                       'acgtcgtagcta'] # 22
-seq_set_case2_fasta = ['aataat', 
-                       'aagg'] # 14
-seq_set_case3_fasta = ['tccagaga',
-                       'tcgat'] # 20
-seq_set_case4_fasta = ['ggcctaaaggcgccggtctttcgtaccccaaaatctcggcattttaagataagtgagtgttgcgttacactagcgatcta\
-ccgcgtcttatacttaagcgtatgcccagatctgactaatcgtgcccccggattagacgggcttgatgggaaagaacagc\
-tcgtctgtttacgtataaacagaatcgcctgggttcgc',
-                       'gggctaaaggttagggtctttcacactaaagagtggtgcgtatcgtggctaatgtaccgcttctggtatcgtggcttacg\
-gccagacctacaagtactagacctgagaactaatcttgtcgagccttccattgagggtaatgggagagaacatcgagtca\
-gaagttattcttgtttacgtagaatcgcctgggtccgc'] # 325
-
-
-
-
-
-o = SP_approx('data/brca1-full.fasta')
-csi = o.center_string_index()
-print(csi)
-
-print(o.build_alignment(csi)[1])
+#example()

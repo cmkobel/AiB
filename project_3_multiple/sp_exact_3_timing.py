@@ -9,8 +9,11 @@ for i in range(10, 210, 10):
     for j in range(replicates):
         t0 = time.time()
         
+
         o = sp_exact_3.SP_exact_3(f'data/testseqs/testseqs_{i}_3.fasta')
-        score = o.align(trace = True)[len(o.A)][len(o.B)][len(o.C)]
+        #score = o.align(trace = False)[len(o.A)][len(o.B)][len(o.C)]
+        score = o.align(trace = False)#[-1][-1][-1]#[len(o.A)][len(o.B)][len(o.C)]
+
 
 
         t1 = time.time()
