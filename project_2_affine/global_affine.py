@@ -1,7 +1,7 @@
 
 from Bio import SeqIO
 
-# Author: Carl M. Kobel 2018
+# Author: Carl Mathias Kobel 2018
 
 #   ~ todo ~
 # * cli?
