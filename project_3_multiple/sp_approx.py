@@ -263,8 +263,8 @@ class SP_approx:
 
 def example():
     """ How to use this program """
-    # Instantiate the class with a faste file containing any number of sequences
-    o = SP_approx('data/brca1-testseqs.fasta')
+    # Instantiate the class with a fasta file containing any number of sequences
+    o = SP_approx('data/brca1-testseqs5.fasta')
 
     # build_alignment() returns a tuple of the multiple sequence alignment, and the score
 
@@ -273,6 +273,9 @@ def example():
 
     #print the score of the msa
     print(o.build_alignment()[1])
+
+    # If you want to know which string is regarded as the center string, run:
+    print(o.find_center_string_index())
 
 
 #example()

@@ -162,7 +162,7 @@ A
 def example():
     """ Example of how to use this program """
     # Instantiate the class with a fasta file containing exactly 3 sequences.
-    o = SP_exact_3('data/testseqs/testseqs_10_3.fasta')
+    o = SP_exact_3('data/brca1-testseqs3.fasta')
     # print the score of an optimal alignment using the substitution matrix hardcoded into the class
     print(o.align())
     
