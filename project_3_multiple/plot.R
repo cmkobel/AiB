@@ -27,7 +27,7 @@ ggplot(filter(data, alg == "exact 3"), aes(len, t^(1/3)/len)) +
 # ratio
 max_ratio = tibble(
     len = seq(10, 200),
-    r = 2-2/len,
+    r = 4/3,
     algorithm = "theoretical max (2-2/m)"
 )
 
@@ -39,7 +39,7 @@ ratio_data = tibble(len = 1:length(ratios)*10, r = ratios, algorithm = "measured
 ggplot(ratio_data, aes(len, r, color = algorithm)) + 
     geom_line() +
     geom_point(data = filter(ratio_data, algorithm == "measured")) +
-    labs(x = "sequence length: m (letters)", y = "ratio (2_approx. / exact_3)", title = "Ratio between the score of two algorithms") +
+    labs(x = "sequence length (letters)", y = "ratio (2_approx. / exact_3)", title = "Ratio between the score of two algorithms") +
     theme(legend.position="bottom")
 
 
