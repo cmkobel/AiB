@@ -3,6 +3,7 @@ from Bio import Phylo as ph
 # author: Carl Mathias Kobel
 
 class Robinson_Foulds_distance:
+    """ Calculates the Robinson-Foulds distance between two trees defined in Newick-format. """
     def __init__(self, file1, file2):
         self.tree1 = ph.read(file1, "newick")
         self.tree2 = ph.read(file2, "newick")
@@ -61,10 +62,7 @@ class Robinson_Foulds_distance:
 
 
 
-
 if __name__ == "__main__":
     o = Robinson_Foulds_distance("data/Testdata/tree1.new",
                                  "data/Testdata/tree2.new")
     print(o.distance)
-
-
