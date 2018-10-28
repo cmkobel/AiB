@@ -13,13 +13,18 @@ ph.draw_ascii(tree0)
 
 
 
+def is_leaf(node):
+    return len(node.clades) == 0
+
+
 def terminals(root):
-    """ Takes a root element, and returns the terminal clades (leaves). """
+    """ Takes a root node, and returns the terminal clades (leaves). """
     leaves = []
     
     def rec(clade):
         """ Recursively traverses the tree, looking for terminals. """
-        if clade.is_terminal():
+        #if clade.is_terminal():
+        if is_leaf(clade):    
             #leaves.append(clade)
             leaves.append(clade.name) # easier, but less flexible
             return
@@ -42,7 +47,7 @@ def internals(root):
     
     def rec(clade):
         """ Recursively traverses the tree, looking for internals. """
-        if not clade.is_terminal():
+        if not is_leaf(clade):
             rv.append(clade)
 
         for clade in clade.clades:
