@@ -9,9 +9,7 @@ class Robinson_Foulds_distance:
         self.tree1 = ph.read(file1, "newick")
         self.tree2 = ph.read(file2, "newick")
 
-
         self.distance = self.rfdist()
-
 
         # print(f'tree1 is bifurc.: {self.tree1.is_bifurcating()}')
         # print(f'tree2 is bifurc.: {self.tree2.is_bifurcating()}')
@@ -31,7 +29,7 @@ class Robinson_Foulds_distance:
             #if clade.is_terminal():
             if self.is_leaf(clade):    
                 #leaves.append(clade)
-                leaves.append(clade.name) # easier, but less flexible
+                leaves.append(clade.name) # easier, but less flexible, whatevs.
                 return
             else:
                 for clade in clade.clades:
@@ -60,7 +58,8 @@ class Robinson_Foulds_distance:
 
 
     def splits(self, root):
-        """ Denne funktion viser sig ikke at være den rigtige måde at beregne antallet af splits på."""
+        """ Denne funktion viser sig ikke at være den rigtige måde at beregne antallet af splits på.
+        Thus, this function is not used."""
         rv = []
         #s_sum = 0
         
@@ -77,8 +76,6 @@ class Robinson_Foulds_distance:
 
         return rv
 
-
-    
 
 
 
@@ -98,14 +95,14 @@ class Robinson_Foulds_distance:
 
 
 if __name__ == "__main__":
-
-    def quick_test():
+    def sandbox():
+        """ Playing around with parameters etc. """
 
         # o = Robinson_Foulds_distance("data/Testdata/tree1.new",
         #                              "data/Testdata/tree2.new")
         
-        o = Robinson_Foulds_distance("experiment1/stockholm/qt/kalign.new",
-                                     "experiment1/stockholm/qt/kalign.new")
+        o = Robinson_Foulds_distance("experiment2/stockholm/qt/clustalo.new",
+                                     "experiment2/stockholm/qt/clustalo.new")
 
         print(o.distance)
         
@@ -115,18 +112,16 @@ if __name__ == "__main__":
         # pylab.show()
         # #print(len(o.internals(o.tree1.root)))
 
-    quick_test()
-
-
-
+    #sandbox()
 
 
 
     # BUILD TABLE
     def build_table():
+        """ Builds the tables for the experiments. """
         def pprint(input):
                 for i in input:
-                    print(*i, sep = '\t')
+                    print(*i, sep = '    ')
 
         names = ['qt/clustalo.new', 'qt/kalign.new', 'qt/mafft.new', 'qt/muscle.new', 'rnj/clustalo.new', 'rnj/kalign.new', 'rnj/mafft.new', 'rnj/muscle.new']
 
@@ -142,7 +137,7 @@ if __name__ == "__main__":
                     print(string)
 
                     o = Robinson_Foulds_distance("experiment1/stockholm/" + i,
-                                                 "experiment1/stockholm/" + j)
+                                                 "experiment2/stockholm/" + j)
                     distance_table[_i][_j] = o.distance
                     print(o.distance)
 
@@ -153,4 +148,4 @@ if __name__ == "__main__":
 
         pprint(distance_table)
 
-    #build_table()
+    build_table()
