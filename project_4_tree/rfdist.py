@@ -1,5 +1,5 @@
 from Bio import Phylo as ph
-import pylab
+import pylab # for plotting
 
 # author: Carl Mathias Kobel
 
@@ -98,19 +98,24 @@ class Robinson_Foulds_distance:
 
 
 if __name__ == "__main__":
-    # o = Robinson_Foulds_distance("data/Testdata/tree1.new",
-    #                              "data/Testdata/tree2.new")
-    
-    # o = Robinson_Foulds_distance("experiment1/stockholm/qt/muscle.new",
-    #                             "experiment1/stockholm/qt/muscle.new")
 
-    #print(o.distance)
-    
+    def quick_test():
 
-    # print(sum(o.splits1))
-    # ph.draw(o.tree2)
-    # pylab.show()
-    # #print(len(o.internals(o.tree1.root)))
+        # o = Robinson_Foulds_distance("data/Testdata/tree1.new",
+        #                              "data/Testdata/tree2.new")
+        
+        o = Robinson_Foulds_distance("experiment1/stockholm/qt/kalign.new",
+                                     "experiment1/stockholm/qt/kalign.new")
+
+        print(o.distance)
+        
+
+        # print(sum(o.splits1))
+        # ph.draw(o.tree2)
+        # pylab.show()
+        # #print(len(o.internals(o.tree1.root)))
+
+    quick_test()
 
 
 
@@ -118,31 +123,34 @@ if __name__ == "__main__":
 
 
     # BUILD TABLE
-    def pprint(input):
-            for i in input:
-                print(*i, sep = '\t')
+    def build_table():
+        def pprint(input):
+                for i in input:
+                    print(*i, sep = '\t')
 
-    names = ['qt/clustalo.new', 'qt/kalign.new', 'qt/mafft.new', 'qt/muscle.new', 'rnj/clustalo.new', 'rnj/kalign.new', 'rnj/mafft.new', 'rnj/muscle.new']
+        names = ['qt/clustalo.new', 'qt/kalign.new', 'qt/mafft.new', 'qt/muscle.new', 'rnj/clustalo.new', 'rnj/kalign.new', 'rnj/mafft.new', 'rnj/muscle.new']
 
-    names_table = [["" for i in range(len(names))] for j in range(len(names))]
-    distance_table = [[None for i in range(len(names))] for j in range(len(names))]
-
-
-    for _i, i in enumerate(names):
-        for _j, j in enumerate(names):
-            if _j <= _i:
-                string = i + " | " + j
-                names_table[_i][_j] = string
-                print(string)
-
-                o = Robinson_Foulds_distance("experiment1/stockholm/" + i,
-                                             "experiment1/stockholm/" + j)
-                distance_table[_i][_j] = o.distance
-                print(o.distance)
-
-                print()
+        names_table = [["" for i in range(len(names))] for j in range(len(names))]
+        distance_table = [[None for i in range(len(names))] for j in range(len(names))]
 
 
-    pprint(names_table)
+        for _i, i in enumerate(names):
+            for _j, j in enumerate(names):
+                if _j <= _i:
+                    string = i + " | " + j
+                    names_table[_i][_j] = string
+                    print(string)
 
-    pprint(distance_table)
+                    o = Robinson_Foulds_distance("experiment1/stockholm/" + i,
+                                                 "experiment1/stockholm/" + j)
+                    distance_table[_i][_j] = o.distance
+                    print(o.distance)
+
+                    print()
+
+
+        pprint(names_table)
+
+        pprint(distance_table)
+
+    #build_table()
