@@ -131,7 +131,8 @@ if __name__ == "__main__":
 
         for _i, i in enumerate(names):
             for _j, j in enumerate(names):
-                if _j <= _i:
+                if _j <= _i: # exp 1 and 2
+                #if _j == _i: # for exp 3, they should be equal: _j == _i (only diagonals)
                     string = i + " | " + j
                     names_table[_i][_j] = string
                     print(string)
