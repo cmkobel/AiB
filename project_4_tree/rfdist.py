@@ -19,6 +19,10 @@ class Robinson_Foulds_distance:
     def is_leaf(self, node):
         return len(node.clades) == 0
 
+    def second_last_string(self, input):
+        return input.split("|")[-2]
+
+
 
     def terminals(self, root):
         """ Takes a root node, and returns the terminal clades (leaves). """
@@ -29,7 +33,9 @@ class Robinson_Foulds_distance:
             #if clade.is_terminal():
             if self.is_leaf(clade):    
                 #leaves.append(clade)
-                leaves.append(clade.name) # easier, but less flexible, whatevs.
+                #leaves.append(clade.name) # easier, but less flexible, whatevs.
+                #print(self.second_last_string(clade.name))
+                leaves.append(self.second_last_string(clade.name))
                 return
             else:
                 for clade in clade.clades:
@@ -94,6 +100,7 @@ class Robinson_Foulds_distance:
 
 
 
+
 if __name__ == "__main__":
     def sandbox():
         """ Playing around with parameters etc. """
@@ -101,8 +108,8 @@ if __name__ == "__main__":
         # o = Robinson_Foulds_distance("data/Testdata/tree1.new",
         #                              "data/Testdata/tree2.new")
         
-        o = Robinson_Foulds_distance("experiment2/stockholm/qt/clustalo.new",
-                                     "experiment2/stockholm/qt/clustalo.new")
+        o = Robinson_Foulds_distance("experiment1/trees/qt/ny fucking kalign.new",
+                                     "experiment1/trees/qt/clustalo.new")
 
         print(o.distance)
         
@@ -112,7 +119,7 @@ if __name__ == "__main__":
         # pylab.show()
         # #print(len(o.internals(o.tree1.root)))
 
-    #sandbox()
+    sandbox()
 
 
 
@@ -149,4 +156,4 @@ if __name__ == "__main__":
 
         pprint(distance_table)
 
-    build_table()
+    #build_table()
