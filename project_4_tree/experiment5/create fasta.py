@@ -1,6 +1,6 @@
 
 
-file_name = 'patbase_aibtas.fasta'
+file_name = 'patbase_aibtas_aligned_clustalo.fasta'
 num_seqs = sum(1 for line in open(file_name)) //2
 #num_seqs = 10 # for testing
 #print(num_lines)
