@@ -119,7 +119,7 @@ if __name__ == "__main__":
         # pylab.show()
         # #print(len(o.internals(o.tree1.root)))
 
-    sandbox()
+    #sandbox()
 
 
 
@@ -138,14 +138,14 @@ if __name__ == "__main__":
 
         for _i, i in enumerate(names):
             for _j, j in enumerate(names):
-                if _j <= _i: # exp 1 and 2
-                #if _j == _i: # for exp 3, they should be equal: _j == _i (only diagonals)
+                #if _j <= _i: # exp 1 and 2
+                if _j == _i: # for exp 3, they should be equal: _j == _i (only diagonals)
                     string = i + " | " + j
                     names_table[_i][_j] = string
                     print(string)
 
-                    o = Robinson_Foulds_distance("experiment1/stockholm/" + i,
-                                                 "experiment2/stockholm/" + j)
+                    o = Robinson_Foulds_distance("experiment1/trees/" + i,
+                                                 "experiment2/trees/" + j)
                     distance_table[_i][_j] = o.distance
                     print(o.distance)
 
@@ -156,4 +156,6 @@ if __name__ == "__main__":
 
         pprint(distance_table)
 
-    #build_table()
+    build_table()
+
+    
