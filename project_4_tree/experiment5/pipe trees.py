@@ -1,6 +1,6 @@
 import subprocess
 
-""" This file takes the increasing fasta files and creates corresponding trees with rapidnj. """
+""" This program takes the increasing fasta files and creates corresponding trees with rapidnj. """
 
 def bash(command):
     process = subprocess.Popen(command.split(), stdout=subprocess.PIPE)
