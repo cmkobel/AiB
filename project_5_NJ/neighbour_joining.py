@@ -3,7 +3,7 @@
 #from * import *
 
 class Node: # A tree node
-    def __init__(self, value, children = []):
+    def __init__(self, value = (0, "no_name"), children = []):
         self.value = value # tuple with weight and name
         self.children = [Node(i) for i in children]
 
@@ -35,20 +35,52 @@ class NJ:
 
 
     def neighbour_joining(self):
+        def flatten(input_list):
+            return [j for sub in input_list for j in sub]
+
         def d_(i, j):
             return self.D[self.S.index(i)][self.S.index(j)]
         def r_(i):
             return 1/(len(S)-2) * sum([d_(i, m) for m in S])
         def n_(i, j):
-            return d_(i, j) - (r_(i) + r_(j))
+            return round(d_(i, j) - (r_(i) + r_(j)), 2) # don't round in the hand in code.
         
         S = self.S
         D = self.D
-        T = Node(0)
+        T = Node((0, 'center'),)
     
 
         while len(S) > 3:
+            # fill up N 
+            N = [[n_(i,j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
+
+
+            # get i and j
+            minimum_pointer = (0, 0)
+            minimum_value = float('inf')
+            for _i, i in enumerate(N):
+                for _j, j in enumerate(i):
+                    if N[_i][_j] < minimum_value:
+                        minimum_value = N[_i][_j]
+                        minimum_pointer = (_i, _j)
+
+            print(minimum_value, '@', minimum_pointer)
+
+            for i in N:
+                print(i)
+
+
+
+
+            
+
+
+
+            # gamma = 
+
+
             break
+
 
     
 
