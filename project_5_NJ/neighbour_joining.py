@@ -55,7 +55,7 @@ class NJ:
             N = [[n_(i,j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
 
-            # get i and j
+            # get i and j of minimum entry in N
             minimum_pointer = (0, 0)
             minimum_value = float('inf')
             for _i, i in enumerate(N):
