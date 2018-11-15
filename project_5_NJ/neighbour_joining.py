@@ -3,15 +3,16 @@
 #from * import *
 
 class Node: # A tree node
-    def __init__(self, value = (0, "no_name"), children = []):
-        self.value = value # tuple with weight and name
+    def __init__(self, value = (0, "no_name"), children = [], parent = None):
+        self.value = value # tuple: (weight, name)
         self.children = [Node(i) for i in children]
+        self.parent = parent
 
     def __str__(self):
         return str(self.value)
 
     def __repr__(self):
-        return f'Node with value {(self.value)} and children {self.children}'
+        return f'Node with value {self.value}{", Parent " + self.parent.value[1] if self.parent != None else ""} and children: {self.children}\n'
 
 
 class NJ:
@@ -35,9 +36,9 @@ class NJ:
 
 
     def neighbour_joining(self):
+        """ Algorithm 10.7, Saitou and Nei's neighbor-joining algorithm. """
         def flatten(input_list):
-            return [j for sub in input_list for j in sub]
-
+            return [i for sub in input_list for i in sub]
         def d_(i, j):
             return self.D[self.S.index(i)][self.S.index(j)]
         def r_(i):
@@ -45,17 +46,28 @@ class NJ:
         def n_(i, j):
             return round(d_(i, j) - (r_(i) + r_(j)), 2) # don't round in the hand in code.
         
-        S = self.S
-        D = self.D
-        T = Node((0, 'center'),)
+        D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
+
+        # Initialization
+        
+        S = self.S # 1. Let S be the set of taxa.
+
+        # 2. Each taxon i is a leaf in the tree T.
+        T = Node((0, 'init. center'))
+        for i in S: # add S to T:
+            T.children.append(Node((0, i), [], T))
+
+        print(repr(T))
     
 
         while len(S) > 3:
-            # fill up N 
-            N = [[n_(i,j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
+            # 1. a) Compute the matrix N
+            N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
+            
+            for i in N: print(i) #debug
 
-            # get i and j
+            #    b) Select i, j in S so that n_i,j is a minimum entry in N
             minimum_pointer = (0, 0)
             minimum_value = float('inf')
             for _i, i in enumerate(N):
@@ -63,11 +75,11 @@ class NJ:
                     if N[_i][_j] < minimum_value:
                         minimum_value = N[_i][_j]
                         minimum_pointer = (_i, _j)
+            print(minimum_value, '@', minimum_pointer) # debug
 
-            print(minimum_value, '@', minimum_pointer)
+            # 2. Add a new node k to the tree T
 
-            for i in N:
-                print(i)
+
 
 
 
@@ -76,7 +88,7 @@ class NJ:
 
 
 
-            # gamma = 
+            # gamma =  
 
 
             break
