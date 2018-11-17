@@ -1,6 +1,6 @@
 # Author: Carl Mathias Kobel 2018
 
-#from * import *
+from itertools import chain
 
 class Node: # A tree node
     def __init__(self, value = (0, "no_name"), children = [], parent = None):
@@ -10,9 +10,18 @@ class Node: # A tree node
 
     def __str__(self):
         return str(self.value)
+    def __repr__(self):
+        return str(self)
 
     def __repr__(self):
-        return f'Node with value {self.value}{", Parent " + self.parent.value[1] if self.parent != None else ""} and children: {self.children}\n'
+        return f'Node with value: {self.value}{", parent: " + self.parent.value[1] if self.parent != None else ""}{", children: " + str(self.children) if len(self.children) > 0 else ""}\n'
+
+
+    def __iter__(self):
+        """ Implement the iterator protocol. """
+        for node in chain(*map(iter, self.children)):
+            yield node
+        yield self
 
 
 class NJ:
@@ -40,6 +49,7 @@ class NJ:
         def flatten(input_list):
             return [i for sub in input_list for i in sub]
         def d_(i, j):
+            """ Get distance from taxon names (strings) """
             return self.D[self.S.index(i)][self.S.index(j)]
         def r_(i):
             return 1/(len(S)-2) * sum([d_(i, m) for m in S])
@@ -57,7 +67,7 @@ class NJ:
         for i in S: # add S to T:
             T.children.append(Node((0, i), [], T))
 
-        print(repr(T))
+        # print(repr(T)) # debug
     
 
         while len(S) > 3:
@@ -65,22 +75,58 @@ class NJ:
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
             
-            for i in N: print(i) #debug
+            #for i in N: print(i) #debug
 
             #    b) Select i, j in S so that n_i,j is a minimum entry in N
-            minimum_pointer = (0, 0)
-            minimum_value = float('inf')
-            for _i, i in enumerate(N):
-                for _j, j in enumerate(i):
-                    if N[_i][_j] < minimum_value:
-                        minimum_value = N[_i][_j]
-                        minimum_pointer = (_i, _j)
-            print(minimum_value, '@', minimum_pointer) # debug
+            min_pointer = (0, 0)
+            min_val = float('inf')
+            for i in range(len(N)):
+                for j in range(len(N)):
+                    if N[i][j] < min_val:
+                        min_val = N[i][j]
+                        min_pointer = (i, j)
+            print(min_val, '@', min_pointer) # debug
+            i, j = (self.S[i] for i in min_pointer)
+            #print(i, j)
 
-            # 2. Add a new node k to the tree T
+            # 2. Add a new node k to the tree T            
+            
+            # II: identify edges
+
+            # find the nodes for i and j
+            for node in T:
+                if node.value[1] == i: node_i = node
+                elif node.value[1] == j:node_j = node
+
+            
+            print(node_i, node_j) # debug
+
+            # remove children from k
+            print('before', node_i.parent.children) # debug
+            node_i.parent.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_i.parent.children)]
+            print('after remove', node_i.parent.children) # debug
+
+            # add k 
+            node_k = Node((0, f'k({i}, {j})'))
+            node_i.parent.children.append(node_k) # fix weight later. For now i just want to add the nodes correctly.
+            print('add k', node_i.parent.children) # debug
+
+            #set the parent of node_i and j to the newly added node_k
+            print('before new parent', node_i.parent)
+            node_i.parent = node_k
+            node_j.parent = node_k
+            print('after new parent', node_i.parent)
+
+            node_k.children.append(node_i)
+            node_k.children.append(node_j)
+
+            # 2. Is done.
 
 
+            print('n',repr(node_k))
+            # Now I just need to set the weights correctly. 
 
+            # Then update D and S accordingly
 
 
 
