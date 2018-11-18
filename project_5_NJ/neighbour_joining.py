@@ -75,7 +75,7 @@ class NJ:
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
             
-            #for i in N: print(i) #debug
+
 
             #    b) Select i, j in S so that n_i,j is a minimum entry in N
             min_pointer = (0, 0)
@@ -98,24 +98,16 @@ class NJ:
                 if node.value[1] == i: node_i = node
                 elif node.value[1] == j:node_j = node
 
-            
             print(node_i, node_j) # debug
 
             # remove children from k
-            print('before', node_i.parent.children) # debug
             node_i.parent.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_i.parent.children)]
-            print('after remove', node_i.parent.children) # debug
 
-            # add k 
+            # add k and and set the parent of node_i and j to the newly added node_k
             node_k = Node((0, f'k({i}, {j})'))
             node_i.parent.children.append(node_k) # fix weight later. For now i just want to add the nodes correctly.
-            print('add k', node_i.parent.children) # debug
-
-            #set the parent of node_i and j to the newly added node_k
-            print('before new parent', node_i.parent)
             node_i.parent = node_k
             node_j.parent = node_k
-            print('after new parent', node_i.parent)
 
             node_k.children.append(node_i)
             node_k.children.append(node_j)
@@ -123,7 +115,7 @@ class NJ:
             # 2. Is done.
 
 
-            print('n',repr(node_k))
+
             # Now I just need to set the weights correctly. 
 
             # Then update D and S accordingly
