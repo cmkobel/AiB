@@ -63,7 +63,7 @@ class NJ:
         S = self.S # 1. Let S be the set of taxa.
 
         # 2. Each taxon i is a leaf in the tree T.
-        T = Node((0, 'init. center'))
+        T = Node((0, 'starcenter'))
         for i in S: # add S to T:
             T.children.append(Node((0, i), [], T))
 
@@ -100,18 +100,24 @@ class NJ:
 
             print(node_i, node_j) # debug
 
-            # remove children from k
-            node_i.parent.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_i.parent.children)]
+            # remove children i,j from parent
+            m = node_i.parent # assuming that node_i and node_j has the same parent.
+            m.children = [node for node in filter(lambda x: x != node_i and x != node_j, m.children)] # this would look a lot prettier with a set instead of a list. Todo..
 
-            # add k and and set the parent of node_i and j to the newly added node_k
-            node_k = Node((0, f'k({i}, {j})'))
-            node_i.parent.children.append(node_k) # fix weight later. For now i just want to add the nodes correctly.
-            node_i.parent = node_k
-            node_j.parent = node_k
+            # add k to the tree
+            node_k = Node((0, f'k({i}, {j})')) # fix weight later. For now I just want to add the nodes correctly.
+            
+            m.children.append(node_k)
+            node_k.parent = m
 
             node_k.children.append(node_i)
             node_k.children.append(node_j)
+            
+            node_i.parent = node_k
+            node_j.parent = node_k
 
+
+            print(repr(T))
             # 2. Is done.
 
 
