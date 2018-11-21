@@ -22,11 +22,14 @@ class Node: # A tree node
 
     def display(self, tabs = 0):
         """ return value based instead """
+
+        # Add your own name.
         rv = '\t' * tabs + \
              str(self.weight) + ' ' +  self.name + \
              f' {"(" + self.parent.name + ")" if self.parent != None else ""}' + \
              '\n'
 
+        # Add the name of your children.
         for i in self.children:
             rv += '\t' * tabs + i.display(tabs + 1)
 

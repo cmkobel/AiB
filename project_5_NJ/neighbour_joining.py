@@ -6,12 +6,8 @@ import phylip_like_parser as plp
 
 class NJ:
     def __init__(self, phylip_file):
-
-        
-        
         self.S = plp.parse(phylip_file)['taxa']
         self.D = plp.parse(phylip_file)['dissimilarity_matrix']
-
 
         self.neighbour_joining()
 
@@ -26,18 +22,18 @@ class NJ:
         def d_(i, j):
             """ Get distance from taxon names (strings) from the mutable D and S """
             return D[S.index(i)][S.index(j)]
-
         def r_(i):
             return 1/(len(S)-2) * sum([d_(i, m) for m in S])
         def n_(i, j):
-            return round(d_(i, j) - (r_(i) + r_(j)), 2) # don't round in the hand in code.
-        def merge_d_(i, j, m):
-            """ This is the function used to calculate the distances to the merged notes in section 4. """
-            return 1/2 * d_(i, m) + d_(j, m) - d_(i, j)
-
+            return d_(i, j) - (r_(i) + r_(j)) # don't round in the hand in code.
 
         
         D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
+
+        print('\ninitial D')
+        for a in D:
+            print(a)
+        print()
 
         # Initialization
         
@@ -49,18 +45,22 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
 
-        print(T.display())
+        print('initial tree T:\n', T.display())
 
 
         while len(S) > 3:
-            print(f'while len(S) = {len(S)} > 3:')
-            if len(S) == 4:
-                print(self.S)
+            print(f'\n\nwhile len(S) = {len(S)} > 3: ---------------------------------------------------------')
+            
             print('S =', S)
+
+
             # 1. a) Compute the matrix N
+            print('\n1:\n')
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
-            
+            print('N:')
+            for n in N:
+                print(n)
 
 
             #    b) Select i, j in S so that n_i,j is a minimum entry in N
@@ -71,11 +71,12 @@ class NJ:
                     if N[i][j] < min_val:
                         min_val = N[i][j]
                         min_pointer = (i, j)
-            
-            i, j = (self.S[i] for i in min_pointer)
-            
+            i, j = (S[i] for i in min_pointer)
+            print(i, j)
 
-            # 2. Add a new node k to the tree T            
+
+            # 2. Add a new node k to the tree T     
+            print('\n2:\n')      
             
             # II: identify edges
 
@@ -84,7 +85,6 @@ class NJ:
                 if node.name == i: node_i = node
                 elif node.name == j:node_j = node
                 # i and j represent the names of the taxa selected.
-
 
             # remove children i,j from parent
             node_m = node_i.parent # assuming that node_i and node_j has the same parent.
@@ -95,59 +95,41 @@ class NJ:
             
 
             # 3. Add edges (k, i) and (k, j)
+            print('\n3:\n')
+
             node_m.children.append(node_k)
 
             node_i.parent = node_k
             node_j.parent = node_k
-            
-            #node_i.weight = 1/2 * (d_(i, j) + r_(i) - r_(j))
-            #node_j.weight = 1/2 * (d_(i, j) + r_(j) - r_(i))
+
+            # So Andy tells me that weights in the tree are not really necessary. #node_i.weight = 1/2 * (d_(i, j) + r_(i) - r_(j)) #node_j.weight = 1/2 * (d_(i, j) + r_(j) - r_(i))
 
             print(T.display())
 
-            # 4. Update the dissimilarity matrix D
-            print('4\n')
-            # We know that S and D are sorted in the same order.
-            # Thus we can simply exclude the indices from the min_pointer already established.
-            # I wonder if this is actually faster than using numpy?
 
-            new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that includes the taxa.
-            S = [S[i] for i in new_indices] # The taxa included
-            k = [merge_d_(i, j, m) for m in S] # k is the column and row that is inserted after the merge of two neighbours.
-            print('k =', k)
+            # 4. Update the dissimilarity matrix D
+            print('\n4:\n')
+
+            # We know that S and D are sorted in the same order.
+            new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that include the taxa.
+
+            new_S = [S[i] for i in new_indices] # The taxa included
+
+            k = [1/2 * d_(i, m) + d_(j, m) - d_(i, j) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
+
             new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
-            S += [f'k({i}, {j})'] # update S to include the name of the newly inserted node k.
+            new_S += [f'k({i}, {j})'] # update S to include the name of the newly inserted node k.
+ 
+
 
             D = new_D
-
-            for a in D:
-                print(a)
-
-
-            
-            
-            
-            #[[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
-
-
-            
-
-
-
-
-            
-
-
-
-            # gamma =  
-
-
+            S = new_S
             
 
 
     
 
-        
+# --------------------------------------------------------------
 
 
 
