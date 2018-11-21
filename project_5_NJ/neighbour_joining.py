@@ -91,7 +91,7 @@ class NJ:
             node_m.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_m.children)] # Remove i and j as immediate children. Todo: his would look a lot prettier with a set instead of a list.
 
             # add k to the tree
-            node_k = Node(0, f'k({i}, {j})', [node_i, node_j], node_m) # fix weight later. For now I just want to add the nodes correctly.
+            node_k = Node(0, f'k[{i}:{j}]', [node_i, node_j], node_m) # fix weight later. For now I just want to add the nodes correctly.
             
 
             # 3. Add edges (k, i) and (k, j)
@@ -125,6 +125,10 @@ class NJ:
             D = new_D
             S = new_S
             
+
+        # termination cases are not necessary, since I'm not interested in the weight anyway..
+        print(T.newick())
+
 
 
     

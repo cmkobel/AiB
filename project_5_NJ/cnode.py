@@ -18,8 +18,6 @@ class Node: # A tree node
         return f'Node with weight: {self.weight}, name: {self.name}{", parent: " + self.parent.name if self.parent != None else ""}{", children: " + str(self.children) if len(self.children) > 0 else ""}\n'
 
 
-
-
     def display(self, tabs = 0):
         """ return value based instead """
 
@@ -36,6 +34,20 @@ class Node: # A tree node
         return rv
 
 
+    def newick(self, tabs = 0):
+        """ return value based instead """
+
+        rv = ''
+        # Add the name of your children.
+        if len(self.children) > 0:
+            rv += '('
+        for i in self.children:
+            rv += i.newick(tabs + 1) + ', '
+        if len(self.children) > 0:
+            rv += '),'
+        # Add your own name.
+        rv += self.name
+        return rv
 
 
 
