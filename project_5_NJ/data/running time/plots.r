@@ -1,8 +1,8 @@
 library(readr)
 library(tidyverse)
-rnj <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/rnj.csv") %>% mutate(algorithm = 'rapidnj')
-qt <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/quicktree.csv") %>% mutate(algorithm = 'quicktree')
-langhave <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/langhave.csv") %>% mutate(algorithm = 'langhave')
+rnj <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/rnj.csv") %>% mutate(algorithm = 'Rapid NJ')
+qt <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/quicktree.csv") %>% mutate(algorithm = 'QuickTree')
+langhave <- read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/running time/langhave.csv") %>% mutate(algorithm = 'generic NJ')
 
 data = bind_rows(rnj, qt) %>% bind_rows(langhave)
 
@@ -15,10 +15,13 @@ data %>% ggplot(aes(x = taxa, y = time, color = algorithm)) +
          x = "taxa",
          y = "time [seconds]")
 
+rq_rfdist = read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/rfdist/rnjmodqt/rq_rfdist.csv") %>% select(-file)
+
+our_rfdist = read_csv("Biologi/AiB/gr_AiB_naotei/project_5_NJ/data/rfdist/voresmodandre/our_rfdist.csv") %>% select(-file)
 
 data %>% select(-file) %>%  spread(algorithm, time) %>%
-    mutate(quicktree / langhave) %>%
-    mutate(rapidnj / langhave) %>%
-    
-    arrange(taxa) %>% View
+    mutate(QuickTree / `generic NJ`) %>%
+    mutate(`Rapid NJ` / `generic NJ`) %>%
+    bind_cols(rq_rfdist) %>%
+    select(-taxa1) %>% View
 

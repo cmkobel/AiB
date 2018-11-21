@@ -26,8 +26,18 @@ def bash(command):
     t2 = time.time()
     return t2-t1, output.decode("utf-8")
 
+# write into file
+def write_file(file_name, content):
+    with open(file_name, "w") as file:
+        for i in content:
+            file.write(i)
 
-print(bash("sleep 2"))
+
+
+
+print(bash("echo testing | tee whattest.txt"))
+#command | tee ~/outputfile.txt
+
 
 # other
 def to_csv(input):
@@ -47,16 +57,17 @@ quicktree = '../../../project_4_tree/data/macos10.12.6/quicktree_1.1/bin/./quick
 
 
 # rapidnj
-if not True:
+if True:
     rapid_nj_results = list()
     for file in files:
         print('file', file)
 
-        n_replicates = 5
+        n_replicates = 1
         replicate_sum = 0
         for replicate in range(n_replicates):
             print('replicate', replicate)
             test = bash(str(f'{rapidnj} -i pd {file_path}{file}'))
+            write_file(f'newick/out_rnj_{file}.newick', test[1])
             replicate_sum += test[0]
             #print(test[1]) # debug
         rapid_nj_results.append((replicate_sum/n_replicates, file, file.split('_')[0]))
@@ -70,17 +81,19 @@ if not True:
     for file in files:
         print('file', file)
 
-        n_replicates = 5
+        n_replicates = 1
         replicate_sum = 0
         for replicate in range(n_replicates):
             print('replicate', replicate)
             test = bash(str(f'{quicktree} -in m {file_path}{file}'))
             replicate_sum += test[0]
-            #print(test[1]) # debug
+            write_file(f'newick/out_qt_{file}.newick',test[1])
         quicktree_results.append((replicate_sum/n_replicates, file, file.split('_')[0]))
 
     print()
     print(to_csv(quicktree_results))
+
+
 
 
 
