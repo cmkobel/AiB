@@ -1,44 +1,16 @@
 # Author: Carl Mathias Kobel 2018
 
-from itertools import chain
-
-class Node: # A tree node
-    def __init__(self, value = (0, "no_name"), children = [], parent = None):
-        self.value = value # tuple: (weight, name)
-        self.children = [Node(i) for i in children]
-        self.parent = parent
-
-    def __str__(self):
-        return str(self.value)
-    def __repr__(self):
-        return str(self)
-
-    def __repr__(self):
-        return f'Node with value: {self.value}{", parent: " + self.parent.value[1] if self.parent != None else ""}{", children: " + str(self.children) if len(self.children) > 0 else ""}\n'
-
-
-    def __iter__(self):
-        """ Implement the iterator protocol. """
-        for node in chain(*map(iter, self.children)):
-            yield node
-        yield self
+from cnode import Node
+import phylip_like_parser as plp
 
 
 class NJ:
     def __init__(self, phylip_file):
 
-        def phylip_like_parser(input_file):
-            with open(input_file, 'r') as file:
-                raw = [line.strip().split() for line in file]
-                rv = {'N': raw[0],
-                      'taxa': [i[0] for i in raw[1:]],
-                      'dissimilarity_matrix': [[float(elem) for elem in list[1:]] for list in raw[1:]]}
-            return rv
         
-        self.S = phylip_like_parser(phylip_file)['taxa']
-        self.D = phylip_like_parser(phylip_file)['dissimilarity_matrix']
-
         
+        self.S = plp.parse(phylip_file)['taxa']
+        self.D = plp.parse(phylip_file)['dissimilarity_matrix']
 
 
         self.neighbour_joining()
@@ -48,13 +20,22 @@ class NJ:
         """ Algorithm 10.7, Saitou and Nei's neighbor-joining algorithm. """
         def flatten(input_list):
             return [i for sub in input_list for i in sub]
-        def d_(i, j):
+        def od_(i, j):
             """ Get distance from taxon names (strings) """
             return self.D[self.S.index(i)][self.S.index(j)]
+        def d_(i, j):
+            """ Get distance from taxon names (strings) from the mutable D and S """
+            return D[S.index(i)][S.index(j)]
+
         def r_(i):
             return 1/(len(S)-2) * sum([d_(i, m) for m in S])
         def n_(i, j):
             return round(d_(i, j) - (r_(i) + r_(j)), 2) # don't round in the hand in code.
+        def merge_d_(i, j, m):
+            """ This is the function used to calculate the distances to the merged notes in section 4. """
+            return 1/2 * d_(i, m) + d_(j, m) - d_(i, j)
+
+
         
         D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
 
@@ -63,14 +44,19 @@ class NJ:
         S = self.S # 1. Let S be the set of taxa.
 
         # 2. Each taxon i is a leaf in the tree T.
-        T = Node((0, 'starcenter'))
+        T = Node(0, 'center')
         for i in S: # add S to T:
-            T.children.append(Node((0, i), [], T))
+            T.children.append(Node(0, i, [], T))
 
-        # print(repr(T)) # debug
-    
+
+        print(T.display())
+
 
         while len(S) > 3:
+            print(f'while len(S) = {len(S)} > 3:')
+            if len(S) == 4:
+                print(self.S)
+            print('S =', S)
             # 1. a) Compute the matrix N
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
@@ -85,9 +71,9 @@ class NJ:
                     if N[i][j] < min_val:
                         min_val = N[i][j]
                         min_pointer = (i, j)
-            print(min_val, '@', min_pointer) # debug
+            
             i, j = (self.S[i] for i in min_pointer)
-            #print(i, j)
+            
 
             # 2. Add a new node k to the tree T            
             
@@ -95,36 +81,57 @@ class NJ:
 
             # find the nodes for i and j
             for node in T:
-                if node.value[1] == i: node_i = node
-                elif node.value[1] == j:node_j = node
+                if node.name == i: node_i = node
+                elif node.name == j:node_j = node
+                # i and j represent the names of the taxa selected.
 
-            print(node_i, node_j) # debug
 
             # remove children i,j from parent
-            m = node_i.parent # assuming that node_i and node_j has the same parent.
-            m.children = [node for node in filter(lambda x: x != node_i and x != node_j, m.children)] # this would look a lot prettier with a set instead of a list. Todo..
+            node_m = node_i.parent # assuming that node_i and node_j has the same parent.
+            node_m.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_m.children)] # Remove i and j as immediate children. Todo: his would look a lot prettier with a set instead of a list.
 
             # add k to the tree
-            node_k = Node((0, f'k({i}, {j})')) # fix weight later. For now I just want to add the nodes correctly.
+            node_k = Node(0, f'k({i}, {j})', [node_i, node_j], node_m) # fix weight later. For now I just want to add the nodes correctly.
             
-            m.children.append(node_k)
-            node_k.parent = m
 
-            node_k.children.append(node_i)
-            node_k.children.append(node_j)
-            
+            # 3. Add edges (k, i) and (k, j)
+            node_m.children.append(node_k)
+
             node_i.parent = node_k
             node_j.parent = node_k
+            
+            #node_i.weight = 1/2 * (d_(i, j) + r_(i) - r_(j))
+            #node_j.weight = 1/2 * (d_(i, j) + r_(j) - r_(i))
+
+            print(T.display())
+
+            # 4. Update the dissimilarity matrix D
+            print('4\n')
+            # We know that S and D are sorted in the same order.
+            # Thus we can simply exclude the indices from the min_pointer already established.
+            # I wonder if this is actually faster than using numpy?
+
+            new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that includes the taxa.
+            S = [S[i] for i in new_indices] # The taxa included
+            k = [merge_d_(i, j, m) for m in S] # k is the column and row that is inserted after the merge of two neighbours.
+            print('k =', k)
+            new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
+            S += [f'k({i}, {j})'] # update S to include the name of the newly inserted node k.
+
+            D = new_D
+
+            for a in D:
+                print(a)
 
 
-            print(repr(T))
-            # 2. Is done.
+            
+            
+            
+            #[[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
 
+            
 
-            # Now I just need to set the weights correctly. 
-
-            # Then update D and S accordingly
 
 
 
@@ -135,7 +142,7 @@ class NJ:
             # gamma =  
 
 
-            break
+            
 
 
     
