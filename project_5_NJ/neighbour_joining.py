@@ -1,5 +1,5 @@
-# Author: Carl Mathias Kobel 2018
 
+# Author: Carl Mathias Kobel 2018
 from cnode import Node
 import phylip_like_parser as plp
 
@@ -9,7 +9,7 @@ class NJ:
         self.S = plp.parse(phylip_file)['taxa']
         self.D = plp.parse(phylip_file)['dissimilarity_matrix']
 
-        self.neighbour_joining()
+        #self.neighbour_joining()
 
 
     def neighbour_joining(self):
@@ -40,7 +40,7 @@ class NJ:
         S = self.S # 1. Let S be the set of taxa.
 
         # 2. Each taxon i is a leaf in the tree T.
-        T = Node(0, 'center')
+        T = Node(0, '')
         for i in S: # add S to T:
             T.children.append(Node(0, i, [], T))
 
@@ -91,7 +91,7 @@ class NJ:
             node_m.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_m.children)] # Remove i and j as immediate children. Todo: his would look a lot prettier with a set instead of a list.
 
             # add k to the tree
-            node_k = Node(0, f'k[{i}:{j}]', [node_i, node_j], node_m) # fix weight later. For now I just want to add the nodes correctly.
+            node_k = Node(0, f'k[{i}_{j}]', [node_i, node_j], node_m) # fix weight later. For now I just want to add the nodes correctly.
             
 
             # 3. Add edges (k, i) and (k, j)
@@ -104,7 +104,7 @@ class NJ:
 
             # So Andy tells me that weights in the tree are not really necessary. #node_i.weight = 1/2 * (d_(i, j) + r_(i) - r_(j)) #node_j.weight = 1/2 * (d_(i, j) + r_(j) - r_(i))
 
-            print(T.display())
+            #print(T.display())
 
 
             # 4. Update the dissimilarity matrix D
@@ -118,7 +118,7 @@ class NJ:
             k = [1/2 * d_(i, m) + d_(j, m) - d_(i, j) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
 
             new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
-            new_S += [f'k({i}, {j})'] # update S to include the name of the newly inserted node k.
+            new_S += [f'k[{i}_{j}]'] # update S to include the name of the newly inserted node k.
  
 
 
@@ -128,17 +128,26 @@ class NJ:
 
         # termination cases are not necessary, since I'm not interested in the weight anyway..
         print(T.newick())
-
-
-
-    
+        return T.newick()
 
 # --------------------------------------------------------------
 
 
 
+if __name__ == '__main__':
+    o = NJ('data/example_slide4.phy')
+    rv = o.neighbour_joining()
+    print('\nthisisthenewshit')
+    print(rv)
 
 
+    #print(tree)
 
-o = NJ('data/example_slide4.phy')
+    #Phylo.draw_ascii(tree)
+
+    #print(3)
+
+    #o = NJ('data/6_Adeno_E3_CR1.phy')
+    #o = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy')
+
 
