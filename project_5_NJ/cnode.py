@@ -41,10 +41,12 @@ class Node: # A tree node
         # Add the name of your children.
         if len(self.children) > 0:
             rv += '('
-        for i in self.children:
-            rv += i.newick(tabs + 1) + ', '
+        for _i, i in enumerate(self.children):
+            rv += i.newick(tabs + 1)
+            if _i < len(self.children)-1:
+                rv += ', '
         if len(self.children) > 0:
-            rv += '),'
+            rv += ')'
         # Add your own name.
         rv += self.name
         return rv
