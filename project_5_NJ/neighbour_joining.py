@@ -30,10 +30,10 @@ class NJ:
         
         D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
 
-        print('\ninitial D')
-        for a in D:
-            print(a)
-        print()
+        # print('\ninitial D')
+        # for a in D:
+        #     print(a)
+        # print()
 
         # Initialization
         
@@ -45,22 +45,22 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
 
-        print('initial tree T:\n', T.display())
+        #print('initial tree T:\n', T.display())
 
 
         while len(S) > 3:
-            print(f'\n\nwhile len(S) = {len(S)} > 3: ---------------------------------------------------------')
+            print(f'while {len(S)} > 3:')
             
-            print('S =', S)
+            #print('S =', S)
 
 
             # 1. a) Compute the matrix N
-            print('\n1:\n')
+            #print('\n1:\n')
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
 
-            print('N:')
-            for n in N:
-                print(n)
+            #print('N:')
+            #for n in N:
+            #    print(n)
 
 
             #    b) Select i, j in S so that n_i,j is a minimum entry in N
@@ -72,11 +72,11 @@ class NJ:
                         min_val = N[i][j]
                         min_pointer = (i, j)
             i, j = (S[i] for i in min_pointer)
-            print(i, j)
+            #print(i, j)
 
 
             # 2. Add a new node k to the tree T     
-            print('\n2:\n')      
+            #print('\n2:\n')      
             
             # II: identify edges
 
@@ -95,7 +95,7 @@ class NJ:
             
 
             # 3. Add edges (k, i) and (k, j)
-            print('\n3:\n')
+            #print('\n3:\n')
 
             node_m.children.append(node_k)
 
@@ -108,7 +108,7 @@ class NJ:
 
 
             # 4. Update the dissimilarity matrix D
-            print('\n4:\n')
+#            print('\n4:\n')
 
             # We know that S and D are sorted in the same order.
             new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that include the taxa.
@@ -127,7 +127,7 @@ class NJ:
             
 
         # termination cases are not necessary, since I'm not interested in the weight anyway..
-        print(T.newick())
+        #print(T.newick())
         return T.newick()
 
 # --------------------------------------------------------------
@@ -135,8 +135,8 @@ class NJ:
 
 
 if __name__ == '__main__':
-    o = NJ('data/example_slide4.phy')
-    rv = o.neighbour_joining()
+    #o = NJ('data/example_slide.phy')
+    rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
     print('\nthisisthenewshit')
     print(rv)
 
