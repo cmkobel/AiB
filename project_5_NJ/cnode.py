@@ -47,8 +47,13 @@ class Node: # A tree node
                 rv += ', '
         if len(self.children) > 0:
             rv += ')'
-        # Add your own name.
-        rv += self.name
+        # Add your own name, but not internal nodes.
+        if self.name[0:2] != 'k[':
+            rv += self.name
+
+        # add semicolon in the end.
+        if tabs == 0:
+            rv += ';'
         return rv
 
 

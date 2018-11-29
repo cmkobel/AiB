@@ -4,6 +4,7 @@ from cnode import Node
 import phylip_like_parser as plp
 
 
+
 class NJ:
     def __init__(self, phylip_file):
         self.S = plp.parse(phylip_file)['taxa']
@@ -15,10 +16,9 @@ class NJ:
     def neighbour_joining(self):
         """ Algorithm 10.7, Saitou and Nei's neighbor-joining algorithm. """
         def flatten(input_list):
+            """ Takes a 2d-list and flattens it to 1d. 
+            Probably not in use.. """
             return [i for sub in input_list for i in sub]
-        def od_(i, j):
-            """ Get distance from taxon names (strings) """
-            return self.D[self.S.index(i)][self.S.index(j)]
         def d_(i, j):
             """ Get distance from taxon names (strings) from the mutable D and S """
             return D[S.index(i)][S.index(j)]
@@ -38,9 +38,13 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
         while len(S) > 3:
-            print(f'while {len(S)} > 3:')
+            print(f'\nwhile {len(S)} > 3: -----------------------------------------------')
             
-            #print('S =', S)
+            print('S =', S)
+
+            print('D =')
+            for i in D:
+                print(i)
 
 
             # 1. a) Compute the matrix N
@@ -111,16 +115,17 @@ class NJ:
         #print(T.newick())
         return T.newick()
 
+
 # --------------------------------------------------------------
 
 
 
 if __name__ == '__main__':
     #o = NJ('data/example_slide.phy')
-    #rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
-    rv = NJ('data/custom_distance_matrices/7_Adeno_E3_CR1.phy').neighbour_joining()
+    #rv = NJ('data/unique_distance_matrices/89/89_Adeno_E3_CR1.phy').neighbour_joining()
+    rv = NJ('data/custom_distance_matrices/214/50.phy').neighbour_joining()
 
-    print('\nthisisthenewshit')
+    print('\nThe newick tree of the current run.')
     print(rv)
 
 
