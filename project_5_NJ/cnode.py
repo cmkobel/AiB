@@ -9,10 +9,10 @@ class Node: # A tree node
         self.parent = parent
 
     def __str__(self):
-        return str((self.weight, self.name))
+        return self.name
     
     def __repr__(self):
-        return str(self)
+        return f'Node {self.name} with weight ({self.weight}) and parent ({self.parent}) has {len(self.children)} children.'
 
     def long_repr(self):
         return f'Node with weight: {self.weight}, name: {self.name}{", parent: " + self.parent.name if self.parent != None else ""}{", children: " + str(self.children) if len(self.children) > 0 else ""}\n'

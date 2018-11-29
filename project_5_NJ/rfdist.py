@@ -163,7 +163,7 @@ if __name__ == "__main__":
 
 
     print('and the distance is:')
-    proj5comp('data/rfdist/compare_sanity/50/kobel.new', 'data/rfdist/compare_sanity/50/qt.new')
+    proj5comp('data/rfdist/compare_sanity/kobel89.newick', 'data/rfdist/compare_sanity/out_qt_89_Adeno_E3_CR1.phy.newick')
     # Denne afstand er alt for høj max er 178, og den giver 106 (60% af max).
     # OK, så rfdist virker fint med navne på internal nodes.
     # Det ser heller ikke ud til at semicolon gør nogen forskel.
