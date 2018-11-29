@@ -163,4 +163,4 @@ if __name__ == "__main__":
 
 
     print('and the distance is:')
-    proj5comp('89.new', '89.new')
+    proj5comp('data/compare/89kobel.newick', 'data/compare/out_qt_89_Adeno_E3_CR1.phy.newick')

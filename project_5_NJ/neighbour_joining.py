@@ -25,17 +25,10 @@ class NJ:
         def r_(i):
             return 1/(len(S)-2) * sum([d_(i, m) for m in S])
         def n_(i, j):
-            return d_(i, j) - (r_(i) + r_(j)) # don't round in the hand in code.
+            return d_(i, j) - (r_(i) + r_(j))
 
         
         D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
-
-        # print('\ninitial D')
-        # for a in D:
-        #     print(a)
-        # print()
-
-        # Initialization
         
         S = self.S # 1. Let S be the set of taxa.
 
@@ -44,10 +37,6 @@ class NJ:
         for i in S: # add S to T:
             T.children.append(Node(0, i, [], T))
 
-
-        #print('initial tree T:\n', T.display())
-
-
         while len(S) > 3:
             print(f'while {len(S)} > 3:')
             
@@ -55,12 +44,7 @@ class NJ:
 
 
             # 1. a) Compute the matrix N
-            #print('\n1:\n')
             N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
-
-            #print('N:')
-            #for n in N:
-            #    print(n)
 
 
             #    b) Select i, j in S so that n_i,j is a minimum entry in N
@@ -76,9 +60,6 @@ class NJ:
 
 
             # 2. Add a new node k to the tree T     
-            #print('\n2:\n')      
-            
-            # II: identify edges
 
             # find the nodes for i and j
             for node in T:
@@ -136,7 +117,9 @@ class NJ:
 
 if __name__ == '__main__':
     #o = NJ('data/example_slide.phy')
-    rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
+    #rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
+    rv = NJ('data/custom_distance_matrices/7_Adeno_E3_CR1.phy').neighbour_joining()
+
     print('\nthisisthenewshit')
     print(rv)
 
