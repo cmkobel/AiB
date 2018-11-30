@@ -46,7 +46,7 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
         while len(S) > 3:
-            print(f'\nwhile {len(S)} > 3:')
+            #print(f'\nwhile {len(S)} > 3:')
             
             #print('S =', S)
 
