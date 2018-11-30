@@ -2,6 +2,7 @@
 # Author: Carl Mathias Kobel 2018
 from cnode import Node
 import phylip_like_parser as plp
+import numpy as np
 
 
 
@@ -27,6 +28,12 @@ class NJ:
             return 1 / (len(S)-2) * sum([d_(i, m) for m in S])
         def n_(i, j):
             return d_(i, j) - (r_(i) + r_(j))
+        def right_top_coordinates(dim):
+                j_start = 1
+                for i in range(dim-1):
+                    for j in range(dim)[j_start::]:
+                        yield((i, j))
+                    j_start += 1
 
         
         D = self.D # Input: n * n dissimilarity matrix D, where n >= 3
@@ -39,26 +46,30 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
         while len(S) > 3:
-            print(f'\nwhile {len(S)} > 3: -----------------------------------------------')
+            print(f'\nwhile {len(S)} > 3:')
             
-            print('S =', S)
+            #print('S =', S)
 
-            print('D =')
-            for i in D:
-                print(i)
+            #print('D =')
+            #for i in D:
+            #    print(i)
 
 
             # a) Compute the matrix N
-            print('slow') # Dette tager meget lang tid:
-            N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)]
+            #print('slow') # Dette tager meget lang tid:
+
+            #print('N4 =')
+            
+
+            combinations = list(right_top_coordinates(len(S)))
+            
+
+            N = np.full((len(S), len(S)), float('inf'), dtype = np.float32)
+            for i, j in combinations:
+                N[i][j] = n_(S[i], S[j])
+            #print(N)
 
 
-            print('N = ')
-            for i in N:
-                for j in i:
-                    print(round(j, 3), end = '\t')
-                print()
-            # Hvordan beregner man N, og skal de være negative?
 
 
             # b) Select i, j in S so that n_i,j is a minimum entry in N
@@ -70,9 +81,7 @@ class NJ:
                         min_val = N[i][j]
                         min_pointer = (i, j)
             i, j = (S[i] for i in min_pointer)
-            print('i, j:', (S.index(i), S.index(j)),
-                  (i, j),
-                  N[S.index(i)][S.index(j)])
+            #print('i, j:', (S.index(i), S.index(j)), (i, j), N[S.index(i)][S.index(j)])
 
 
             # 2. Add a new node k to the tree T     
@@ -82,7 +91,7 @@ class NJ:
                 if node.name == i: node_i = node
                 elif node.name == j: node_j = node
                 # i and j represent the names of the taxa selected.
-            print(repr(node_i), '|', repr(node_j))
+            #print(repr(node_i), '|', repr(node_j))
 
             # remove children i,j from parent
             node_m = node_i.parent # assuming that node_i and node_j has the same parent.
@@ -102,30 +111,30 @@ class NJ:
             # We know that S and D are sorted in the same order.
             new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that include the taxa.
             # Todo: Jeg er ikke sikker på at jeg referer til den rigtige S liste når jeg udfylder noget af det nedenstående. Kan det udelukkes at jeg ikke bytter rundt på ny og gammel der?
-            print('new_indices', new_indices)
+            #print('new_indices', new_indices)
 
-            print('bef')
-            print(S)
+            #print('bef')
+            #print(S)
             new_S = [S[i] for i in new_indices] # The taxa included
-            print('new_S', new_S)
+            #print('new_S', new_S)
 
             k = [1/2 * (d_(i, m) + d_(j, m) - d_(i, j)) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
-            print('k before insertion', k)
+            #print('k before insertion', k)
 
             new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
-            for i in new_D:
-                print(i)
+            #for i in new_D:
+            #    print(i)
 
             new_S += [f'k[{node_i.name}_{node_j.name}]'] # update S to include the name of the newly inserted node k.
             #print('hvad', f'k[{node_i.name}_{node_j.name}]')
-            print(new_S)
+            #print(new_S)
  
 
 
             D = new_D
             S = new_S
 
-            
+            #break
             
 
         #print(T.display())
@@ -156,5 +165,14 @@ if __name__ == '__main__':
 
     #o = NJ('data/6_Adeno_E3_CR1.phy')
     #o = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy')
+
+
+
+
+
+
+
+
+
 
 
