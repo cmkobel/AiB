@@ -49,7 +49,8 @@ class NJ:
 
 
             # a) Compute the matrix N
-            N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)] 
+            print('slow') # Dette tager meget lang tid:
+            N = [[n_(i, j) if _i > _j else float('inf') for _j, j in enumerate(S)] for _i, i in enumerate(S)]
 
 
             print('N = ')
@@ -100,13 +101,15 @@ class NJ:
 
             # We know that S and D are sorted in the same order.
             new_indices = set(range(len(S))) - set([i for i in min_pointer]) # The indices that include the taxa.
+            # Todo: Jeg er ikke sikker på at jeg referer til den rigtige S liste når jeg udfylder noget af det nedenstående. Kan det udelukkes at jeg ikke bytter rundt på ny og gammel der?
+            print('new_indices', new_indices)
 
             print('bef')
             print(S)
             new_S = [S[i] for i in new_indices] # The taxa included
-            print(new_S)
+            print('new_S', new_S)
 
-            k = [1/2 * d_(i, m) + d_(j, m) - d_(i, j) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
+            k = [1/2 * (d_(i, m) + d_(j, m) - d_(i, j)) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
             print('k before insertion', k)
 
             new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
@@ -121,6 +124,8 @@ class NJ:
 
             D = new_D
             S = new_S
+
+            
             
 
         #print(T.display())
@@ -132,8 +137,9 @@ class NJ:
 
 
 if __name__ == '__main__':
-    rv = o = NJ('data/example_slide4.phy').neighbour_joining()
-    #rv = NJ('data/unique_distance_matrices/89/89_Adeno_E3_CR1.phy').neighbour_joining()
+    #rv = o = NJ('data/example_slide4.phy').neighbour_joining()
+    rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
+    
     #rv = NJ('data/custom_distance_matrices/214/50.phy').neighbour_joining()
     #rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
 
