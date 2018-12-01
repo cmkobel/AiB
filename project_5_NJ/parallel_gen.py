@@ -33,5 +33,5 @@ def generate_unique_trees(file):
 
 if __name__ == '__main__':
     with multiprocessing.Pool(4) as p:
-        p.map(generate_unique_trees, files[0:2:])
+        p.map(generate_unique_trees, files)
     
