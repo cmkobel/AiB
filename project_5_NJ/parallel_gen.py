@@ -16,6 +16,7 @@ filenames = ['89_Adeno_E3_CR1.phy' ,'214_Arena_glycoprot.phy' ,'304_A1_Propeptid
 directory = 'data/unique_distance_matrices/'
 files = [directory + filename for filename in filenames]
 
+out_prefix = 'parallel_output/'
 
 time_collector = []
 
@@ -24,14 +25,14 @@ def generate_unique_trees(file):
     rv = neighbour_joining.NJ(file).neighbour_joining()
     t2 = time.time()
 
-    write_file(f'kobel_{file.split("/")[-1]}.newick', rv)
+    write_file(f'{out_prefix}kobel_{file.split("/")[-1]}.newick', rv)
     time_collector.append(t2-t1)
-    write_file(f'kobel_{file.split("/")[-1]}.time.txt', str(time_collector))
+    write_file(f'{out_prefix}kobel_{file.split("/")[-1]}.time.txt', str(time_collector))
 
 
 
 
 if __name__ == '__main__':
-    with multiprocessing.Pool(4) as p:
-        p.map(generate_unique_trees, files)
+    with multiprocessing.Pool(2) as p:
+        p.map(generate_unique_trees, files[0:2:])
     

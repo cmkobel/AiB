@@ -154,5 +154,5 @@ if __name__ == "__main__":
 
 #    build_table()
 
-    o = Robinson_Foulds_distance("kobel89.newick", "out_qt_89_Adeno_E3_CR1.phy.newick")
+    o = Robinson_Foulds_distance("kobel89hurtig.newick", "out_qt_89_Adeno_E3_CR1.phy.newick")
     print(o.distance)    

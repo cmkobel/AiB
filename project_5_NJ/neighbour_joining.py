@@ -59,14 +59,17 @@ class NJ:
             #print('slow') # Dette tager meget lang tid:
 
             #print('N4 =')
+
+            #calculate all r_i, and reuse:
+            rs = [r_(i) for i in S]
+            #print('rs', rs)
+
             
 
             combinations = list(right_top_coordinates(len(S)))
-            
-
             N = np.full((len(S), len(S)), float('inf'), dtype = np.float32)
             for i, j in combinations:
-                N[i][j] = n_(S[i], S[j])
+                N[i][j] = d_(S[i], S[j]) - (rs[i] + rs[j])
             #print(N)
 
 
@@ -118,6 +121,7 @@ class NJ:
             new_S = [S[i] for i in new_indices] # The taxa included
             #print('new_S', new_S)
 
+            #update rs firsthand
             k = [1/2 * (d_(i, m) + d_(j, m) - d_(i, j)) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
             #print('k before insertion', k)
 
@@ -149,7 +153,7 @@ if __name__ == '__main__':
     #rv = o = NJ('data/example_slide4.phy').neighbour_joining()
     rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
     
-    #rv = NJ('data/custom_distance_matrices/214/50.phy').neighbour_joining()
+    #rv = NJ('data/custom_distance_matrices/214/10.phy').neighbour_joining()
     #rv = NJ('data/unique_distance_matrices/89_Adeno_E3_CR1.phy').neighbour_joining()
 
 
