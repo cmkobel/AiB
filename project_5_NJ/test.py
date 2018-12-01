@@ -2,17 +2,11 @@ import numpy as np
 
 
 
-def right_top_coordinates(dim):
-    j_start = 1
-    for i in range(dim-1):
-        for j in range(dim)[j_start::]:
-            yield((i, j))
-        j_start += 1
+N = np.array([[1,0,3], [2,2,3]])
+
+print(N)
+
+ind = np.unravel_index(np.argmin(N, axis=None), N.shape)
 
 
-li = list(right_top_coordinates(4))
-
-print(li)
-
-
-
+print(ind[1])
