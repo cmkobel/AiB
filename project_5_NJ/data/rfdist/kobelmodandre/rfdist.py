@@ -19,8 +19,6 @@ class Robinson_Foulds_distance:
     def is_leaf(self, node):
         return len(node.clades) == 0
 
-    def second_last_string(self, input):
-        return input.split("|")[-2]
 
 
 
@@ -35,7 +33,7 @@ class Robinson_Foulds_distance:
                 #leaves.append(clade)
                 #leaves.append(clade.name) # easier, but less flexible, whatevs.
                 #print(self.second_last_string(clade.name))
-                leaves.append(self.second_last_string(clade.name))
+                leaves.append(clade.name)
                 return
             else:
                 for clade in clade.clades:
