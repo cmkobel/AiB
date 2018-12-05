@@ -57,9 +57,6 @@ class Node: # A tree node
         return rv
 
 
-
-
-
     def __iter__(self):
         """ Implement the iterator protocol. """
         for node in chain(*map(iter, self.children)):
