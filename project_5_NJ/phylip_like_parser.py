@@ -17,10 +17,3 @@ def parse(input_file):
 
 
     return rv
-
-
-if __name__ == '__main__':
-    # Short test.
-
-    print(parse('data/custom_distance_matrices/14_Adeno_E3_CR1.phy'))
-#   print(parse('data/custom_distance_matrices/29_Adeno_E3_CR1.phy'))
