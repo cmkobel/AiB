@@ -14,6 +14,5 @@ if __name__ == "__main__":
             file.write(i)
 
     compare_to = 'data/out_qt_89_Adeno_E3_CR1.phy.newick'
-    print('The distance between Our Rapid-NJ and the Quicktree tree is:')
     dist = rfdist.Robinson_Foulds_distance(out_file_name, compare_to)
     print(dist.distance)
