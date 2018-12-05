@@ -40,6 +40,10 @@ class NJ:
             T.children.append(Node(0, i, [], T))
 
         while len(S) > 3:
+            print(f'while {len(S)} > 3:     ------------------------------------')
+            for i in D:
+                print(i)
+            print()
             
             #calculate all r_i for reuse:
             rs = [r_(i) for i in S]            
@@ -66,6 +70,9 @@ class NJ:
                 if node.name == i: node_i = node
                 elif node.name == j: node_j = node
 
+            print(f'joining {min_pointer}: {node_i}, {node_j}')
+            print()
+
             # remove children i,j from parent
             node_m = node_i.parent # assuming that node_i and node_j has the same parent.
             node_m.children = [node for node in filter(lambda x: x != node_i and x != node_j, node_m.children)] # Remove i and j as immediate children. Todo: his would look a lot prettier with a set instead of a list.
@@ -84,7 +91,7 @@ class NJ:
             new_S = [S[i] for i in new_indices] # The taxa included
             
             k = [1/2 * (d_(i, m) + d_(j, m) - d_(i, j)) for m in new_S] # k is the column and row that is inserted after the merging of the two neighbours. At this point, new_S doesn't contain the merged node (k).
-
+            print('k:', k)
             new_D = [[D[i][j] for i in new_indices] + [k[_num]] for _num, j in enumerate(new_indices)] + [k + [0]] # new D that includes k in both directions.
 
             new_S += [f'k[{node_i.name}_{node_j.name}]'] # update S to include the name of the newly inserted node k.
@@ -102,21 +109,29 @@ class NJ:
 
 if __name__ == '__main__':
 
-    # Instantiate neighbour joining object.
-    #newick_tree = NJ('89_Adeno_E3_CR1.phy').neighbour_joining()
-    newick_tree = NJ('example_slide4.phy').neighbour_joining()
+    def show_off():
+        # Instantiate neighbour joining object.
+        newick_tree = NJ('89_Adeno_E3_CR1.phy').neighbour_joining()
+        #newick_tree = NJ('example_slide4.phy').neighbour_joining()
 
-    print('The newick tree of the current run.')
+        print('The newick tree of the current run.')
+        print(newick_tree)
+
+        # Save newick tree string to disk (my rfdistance program only works with files.)
+        out_file_name = 'njoutput.newick'
+        with open(out_file_name, 'w') as file:
+            for i in newick_tree:
+                file.write(i)
+
+        
+        compare_to = 'out_qt_89_Adeno_E3_CR1.phy.newick'
+        print('The distance between Our Saitou Nei and the Quicktree file is:')
+        dist = Robinson_Foulds_distance(out_file_name, compare_to)
+        print(dist.distance)
+
+    #show_off()
+
+    newick_tree = NJ('10.phy').neighbour_joining()
+    print('Saitou Nei.')
     print(newick_tree)
 
-    # Save newick tree string to disk (my rfdistance program only works with files.)
-    out_file_name = 'njoutput.newick'
-    with open(out_file_name, 'w') as file:
-        for i in newick_tree:
-            file.write(i)
-
-    
-    compare_to = 'out_qt_89_Adeno_E3_CR1.phy.newick'
-    print('The distance between Our Saitou Nei and the Quicktree file is:')
-    dist = Robinson_Foulds_distance(out_file_name, compare_to)
-    print(dist.distance)
