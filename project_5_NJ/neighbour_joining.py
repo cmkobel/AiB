@@ -103,7 +103,9 @@ class NJ:
 if __name__ == '__main__':
 
     # Instantiate neighbour joining object.
-    newick_tree = NJ('89_Adeno_E3_CR1.phy').neighbour_joining()
+    #newick_tree = NJ('89_Adeno_E3_CR1.phy').neighbour_joining()
+    newick_tree = NJ('example_slide4.phy').neighbour_joining()
+
     print('The newick tree of the current run.')
     print(newick_tree)
 
