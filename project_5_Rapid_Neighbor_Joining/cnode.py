@@ -10,10 +10,10 @@ class Node: # A tree node
         return self.name
     
     def __repr__(self):
-        return f'Node {self.name} with {len(self.children) if len(self.children) > 0 else "no"} children'
+        return str(self)
 
-    def long_repr(self):
-        return f'Node with name: {self.name} and {" children: " + str(self.children) if len(self.children) > 0 else ""}\n'
+    def longrepr(self):
+        return f'Node {self.name} with {len(self.children) if len(self.children) > 0 else "no"} children'
 
     def append(self, new_child):
         self.children += new_child

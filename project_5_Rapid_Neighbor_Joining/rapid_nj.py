@@ -28,9 +28,12 @@ class RNJ:
         # Indices in unjoined_nodes correspond to indeces in taxa and D.
         unjoined_nodes = [Node(name) for name in self.taxa]
         print(type(D[0][0]))
+
         
         while len(unjoined_nodes) > 3:
             
+
+
 
 
             q_min = float('inf') # The best q-value at a given point in an iteration. Update later in the loop than here in the beginning. I guess it has to be reset at every iteration?
@@ -56,6 +59,7 @@ class RNJ:
             # Search each row in S
             for _row, row in enumerate(S):
                 for _col, col in enumerate(row): # list compr.?
+                # This is where there ought to be an optimization step, surpassing the rest of a row, depending on u_max.
 
                     
                     val = S[_row][_col] - u(_row) - u(V[_row][_col])
@@ -70,22 +74,44 @@ class RNJ:
 
                 
             
+        
+            dist_ij = D[_i][_j] # Optimization
+            dist_k = [0.5 * (D[_i][_m] + D[_j][_m] - dist_ij) for _m, m in enumerate(unjoined_nodes)] # PORAE:  D[_i][_j] can be precomputed, as it doesn't change 
+            print('dist_k\n', dist_k)
+            
             node_i = unjoined_nodes[_i] # Overwritten with node k later.
-            node_j = unjoined_nodes.pop(_j)
+            node_j = unjoined_nodes.pop(_j) # delete item.
+            
+            # D: update rows and cols _i with k, then delete rows and cols _j
+            D[:, _i] = dist_k
+            D[_i] = dist_k
+            D = np.delete(D, _j, 1)
+            D = np.delete(D, _j, 0)
+            print(D)
+
+
+
             node_k = Node(f'k[{node_i.name}_{node_j.name}]', [node_i, node_j])
             unjoined_nodes[_i] = node_k
             print(_i, _j, node_i, node_j)
 
             
-            # Delete node_i and node_j from unjoined _nodes and insert k
-            print('unjoined_nodes:', unjoined_nodes, sep = '\n')
+
+            # calculate distance to new node
+            print('last')
+            print(unjoined_nodes)
+            print(D)
+
+            # Insert k into D
+            #1/2 * (D(i, m) + D(j, m) - D(i, j))
+            #dist_k = [0.5 * ()]
 
 
 
             # Update D
 
 
-            break
+#            break
         
 
         # Collect the unjoined_nodes and print.
@@ -101,11 +127,16 @@ if __name__ == '__main__':
 
     
     if True:
-        # rv = RNJ('data/10.phy').neighbour_joining() # (((8_Q9DK06_, 9_Q9DK03_), ((4_VGLY_PI, 5_O11998_), (6_O11999_, 7_O11997_))), (2_Q9YTW9_, 3_Q9YTW8_), (0_Q9YTX1_, 1_O90423_));
-        rv = RNJ('data/example_slide4.phy').neighbour_joining() #
-        print(rv)
+        newick_tree = RNJ('data/10.phy').neighbour_joining() # (((8_Q9DK06_, 9_Q9DK03_), ((4_VGLY_PI, 5_O11998_), (6_O11999_, 7_O11997_))), (2_Q9YTW9_, 3_Q9YTW8_), (0_Q9YTX1_, 1_O90423_));
+        #newick_tree = RNJ('data/example_slide4.phy').neighbour_joining() #
+        print('\n\n', newick_tree)
+
+
+
+
 
         
+            
 
 
 
