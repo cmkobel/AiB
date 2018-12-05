@@ -21,6 +21,7 @@ class NJ:
         def r_(i):
             """ r_i is a kind of normalized distance of i to all other taxa. """
             return 1 / (len(S)-2) * sum([d_(i, m) for m in S])
+            
         def n_(i, j):
             return d_(i, j) - (r_(i) + r_(j))
         def right_top_coordinates(dim):
@@ -51,14 +52,19 @@ class NJ:
             combinations = list(right_top_coordinates(len(S)))
             N = np.full((len(S), len(S)), float('inf'), dtype = np.float32)
             for i, j in combinations:
-                N[i][j] = d_(S[i], S[j]) - (rs[i] + rs[j])
+                #N[i][j] = d_(S[i], S[j]) - (rs[i] + rs[j]) # TODO: Det er muligt man kan forbedre kørselstiden ved at lave N som en matrixoperation, i stedet for med forløkker.
+                N[i][j] = - rs[i] #- rs[j] # TODO: Det er muligt man kan forbedre kørselstiden ved at lave N som en matrixoperation, i stedet for med forløkker.
+
+
+            print('N:')
+            print(N)
 
             # b) Select i, j in S so that n_i,j is a minimum entry in N
             min_pointer = (0, 0)
             min_val = float('inf')
             for i in range(len(N)):
                 for j in range(len(N)):
-                    if N[i][j] < min_val:
+                    if N[i][j] < min_val: 
                         min_val = N[i][j]
                         min_pointer = (i, j)
             i, j = (S[i] for i in min_pointer)
@@ -131,7 +137,12 @@ if __name__ == '__main__':
 
     #show_off()
 
-    newick_tree = NJ('10.phy').neighbour_joining()
+    
+
+
+
+    newick_tree = NJ('example_slide4.phy').neighbour_joining()
+    #newick_tree = NJ('10.phy').neighbour_joining()
     print('Saitou Nei.')
     print(newick_tree)
 
