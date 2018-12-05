@@ -1,3 +1,5 @@
+# Author: Carl Mathias Kobel 2018
+
 def parse(input_file):
     """ Parses a phylip like file into a dict with all the contents present. """
     with open(input_file, 'r') as file:
@@ -7,13 +9,12 @@ def parse(input_file):
               'dissimilarity_matrix': [[float(elem) for elem in list[1:]] for list in raw[1:]]}
 
         # Sanity checks.
+        # Lengths N and height of matrix should be equal.
         if len(rv['taxa']) != int(rv['N']):
             raise ValueError(f"The height of the dissimilarity matrix ({len(rv['taxa'])}) doesn\'t match the number specified in the file ({int(rv['N'])}).")
 
+        # Same for width.
         if len(rv['dissimilarity_matrix'][0]) != int(rv['N']):
             raise ValueError(f"The width of the dissimilarity matrix ({len(rv['dissimilarity_matrix'][0])}) doesn\'t match the number specified in the file ({int(rv['N'])}).")
-
-
-
 
     return rv
