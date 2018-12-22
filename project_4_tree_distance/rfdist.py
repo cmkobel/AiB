@@ -48,7 +48,8 @@ class Robinson_Foulds_distance:
 
     def internals(self, root):
         """ Traverses the internal elements. 
-        Could have been a generator. """
+        Could have been a generator. 
+        Depth first. """
         rv = []
         
         def recurse(clade):
@@ -92,12 +93,7 @@ class Robinson_Foulds_distance:
             for i_2 in self.internals(self.tree2.root):
                 if self.terminals(i_1) == self.terminals(i_2):
                     shared += 1
-        # Der er stadig noget galt med kalign
-        # printer to forskellige måder. 1. hvor antal splits i hvert træ er defineret fra antal internal splits, og 2. fra antal children minus 1 på hver internal node.
-        return (len(self.internals(self.tree1.root)) + len(self.internals(self.tree2.root)) - 2*shared) #,
-                #sum(self.splits(self.tree1.root)) + sum(self.splits(self.tree2.root)) - 2*shared)
-
-
+        return (len(self.internals(self.tree1.root)) + len(self.internals(self.tree2.root)) - 2*shared)
 
 
 
@@ -108,7 +104,7 @@ if __name__ == "__main__":
         # o = Robinson_Foulds_distance("data/Testdata/tree1.new",
         #                              "data/Testdata/tree2.new")
         
-        o = Robinson_Foulds_distance("experiment1/trees/qt/ny fucking kalign.new",
+        o = Robinson_Foulds_distance("experiment1/trees/qt/kalign.new",
                                      "experiment1/trees/qt/clustalo.new")
 
         print(o.distance)
@@ -119,7 +115,7 @@ if __name__ == "__main__":
         # pylab.show()
         # #print(len(o.internals(o.tree1.root)))
 
-    #sandbox()
+    sandbox()
 
 
 
