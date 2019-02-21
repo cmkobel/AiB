@@ -1,0 +1,16 @@
+// Suffix tree
+digraph {
+	"|" [label=""]
+	"M|M" [label=M]
+	"i|Mi" [label=Mi]
+	"s|Mis" [label=Mis]
+	"s|Miss" [label=Miss]
+	"i|Missi" [label=Missi]
+	"s|Missis" [label=Missis]
+	"s|Mississ" [label=Mississ]
+	"i|Mississi" [label=Mississi]
+	"p|Mississip" [label=Mississip]
+	"p|Mississipp" [label=Mississipp]
+	"i|Mississippi" [label=Mississippi]
+	"$|Mississippi$" [label="Mississippi$"]
+}
