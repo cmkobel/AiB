@@ -7,7 +7,6 @@ class tnode:
     def __init__(self, in_edge_label = None, string_label = None, siblings = [], children = []):
         self.in_edge_label = in_edge_label # The edge into this node. Contains some character(s).
         self.string_label = string_label # The sum of upstream in_edge_labels.
-        self.siblings = [i for i in siblings] # unused
         self.children = [i for i in children] 
 
     def __str__(self):
@@ -16,16 +15,22 @@ class tnode:
 
     def __iter__(self):
         yield self
-        for node in chain(*map(iter, self.children)): # asterisken putter alle elementerne i en liste, og giver listen som argument til map.
+        for node in chain(*map(iter, self.children)):
             yield node
 
     def __repr__(self):
         return str(self)
 
-    def visualize(self):
-
+    def visualize_old(self):
+        """ Should be called on the root. """
 
         dot = Digraph(comment='Suffix tree')
+
+
+        def expand_content(node):
+            node_content = node.in_edge_label + '|' + node.string_label
+            edge_content =  node.string_label
+            return node_content, edge_content
 
         #dot.node('A', 'King Arthur')
         #dot.node('B', 'Sir Bedevere the Wise')
@@ -34,9 +39,22 @@ class tnode:
         #dot.edges(['AB', 'AL'])
         #dot.edge('B', 'L', label = 'john', constraint='false')
 
-        for i in self:
-            print(i)
-            dot.node(i.in_edge_label + '|' + i.string_label, i.string_label)
+
+        def accept_node(node):
+            """ adds children recursively """
+            dot.node(*expand_content(node))
+            for child in node.children: # Jeg ved ikke helt hvorfor jeg er nødt til at skrive .children.
+                accept_node(child) # tilføj child
+                dot.edge(expand_content(node)[0], expand_content(child)[0], child.in_edge_label) # peg fra parent til child.
+
+
+        accept_node(self)
+
+
+
+
+
+
 
 
         dot.render('test-output/suffix tree', view=True)
@@ -45,11 +63,12 @@ class tnode:
 
 
 
-S = 'Mississippi'
+S = 'mississippi'
 n = len(S)
 null_char = '$' # null character
 
-def iter_string(S):
+def suffixes(S):
+    """ Generates all suffixes from S """
     for i in range(n):
         yield S[i:] + null_char
     yield null_char # Detablable whether the null_char should be returned for now.
@@ -61,21 +80,30 @@ def unfold_string(S):
         yield i, S[0:_i+1]
 
 
+
+
 # Step 1) Add the full string to the trie, to build the initial tree.
-root = tnode('', '')
-
-node = root
-
+tree = tnode('', '(ROOT)')
+node = tree
 for edge_in, string in unfold_string(S):
-    
-    new_node = tnode(edge_in, string)
-    node.children.append(new_node)
-    node = new_node
+    node.children.append(tnode(edge_in, string))
+    node = node.children[0]
 
 
+# Add all suffixes, one at a time.
+for i in suffixes(S[1:]):
+    #print(i)
+    pass
+
+# Add a selected suffix
+suffix = 'sippi$'
+for node in tree:
+    print(node)
+
+# Compact the tree.
 
 
+#tree.children[0].children.append(tnode('in edge content', 'node content'))
 
 
-
-root.visualize()
+tree.visualize_old()
