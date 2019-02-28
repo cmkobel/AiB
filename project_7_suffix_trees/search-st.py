@@ -5,10 +5,9 @@ from trienode import trienode
 
 
 class suffixtree:
-    def __init__(self, S, null_char = '$', debug = False):
+    def __init__(self, S, null_char = '$', show = False):
         self.S = S + null_char
         self.null_char = null_char
-        self.DEBUG = debug
         
 
         ## Workflow: ##
@@ -24,7 +23,11 @@ class suffixtree:
         self.compact(self.tree)
 
         # 4)
-        self.tree.visualize(True)
+        if show:
+            self.tree.visualize(True)
+
+    def __iter__(self):
+        return self.tree.__iter__()
 
 
     def add_string(self, node, string):
@@ -83,8 +86,25 @@ class suffixtree:
 
 
 if __name__ == "__main__":
-    o = suffixtree('tatat')
+    st = suffixtree('Mississippi', show = True)
+    #                    ^^^^^
+
+    p = 'issip'
+
+    # Jeg tror altså bare jeg laver den rekursiv
+    
+    def rec_search(node, p):
+        print('recursive call; p:', p, ',node:', node)
+        if len(p) == 0:
+            return node
+
+        for child in node.children:
+            print(' child:', child.in_edge_label)
+            if p[0:len(child.in_edge_label)] == child.in_edge_label:
+                print('  match:', p[0:len(child.in_edge_label)], 'in child:', child.in_edge_label)
+                print()
+                rec_search(child, p[len(child.in_edge_label):])
 
 
 
-
+    rec_search(st.tree, p)
