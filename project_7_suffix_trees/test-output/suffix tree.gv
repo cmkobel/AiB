@@ -9,8 +9,6 @@ digraph {
 	"$|tatat$" [label="tatat$"]
 	"t|tatat" -> "$|tatat$" [label="$"]
 	"a|tata" -> "t|tatat" [label=t]
-	"$|tata$" [label="tata$"]
-	"a|tata" -> "$|tata$" [label="$"]
 	"t|tat" -> "a|tata" [label=a]
 	"a|ta" -> "t|tat" [label=t]
 	"t|t" -> "a|ta" [label=a]

@@ -1,112 +1,108 @@
 # Title: Search Suffix Tree
-from itertools import chain
-from graphviz import Digraph
+
+from trienode import trienode
 # Author: Carl M. Kobel
-
-class tnode:
-    """ A trie node. """
-    def __init__(self, in_edge_label = None, string_label = None, siblings = [], children = []):
-        self.in_edge_label = in_edge_label # The edge into this node. Contains some character(s).
-        self.string_label = string_label # The sum of upstream in_edge_labels.
-        self.children = [i for i in children] 
-
-    def __str__(self):
-        """ The .string_label is used more often, I guess? """
-        return self.string_label
-
-    def __iter__(self):
-        yield self
-        for node in chain(*map(iter, self.children)):
-            yield node
-
-    def __repr__(self):
-        return str(self)
-
-    def visualize_old(self):
-        """ Draws a graph with graphviz. """
-
-        dot = Digraph(comment='Suffix tree')
-
-        def node_format(node):
-            node_content = node.in_edge_label + '|' + node.string_label
-            edge_content =  node.string_label
-            return node_content, edge_content
-
-
-        def accept_node(node):
-            """ Adds children recursively. """
-            dot.node(*node_format(node))
-            for child in node.children: # 
-                accept_node(child) # tilføj child
-                dot.edge(node_format(node)[0],
-                         node_format(child)[0],
-                         label = child.in_edge_label) # peg fra parent til child.
-
-
-        accept_node(self)
-
-        dot.render('test-output/suffix tree.gv', view=True)
-
 
 
 
 
 null_char = '$' # null character
-S = 'tatat' + null_char
+S = 'tatat' # tatat
+S += null_char
 n = len(S)
 
-def suffixes(S):
-    """ Generates all suffixes from S """
-    for i in range(n):
-        yield S[i:] + null_char
-    yield null_char # Detablable whether the null_char should be returned for now.
+
+# def suffixes(S):
+#     """ Generates all suffixes from S """
+#     for i in range(n):
+#         yield S[i:]# + null_char
+#     #yield null_char # Debatable whether the null_char should be returned for now.
 
 def unfold_string(S):
-    """ Unfolds the string in a way that makes it easy to populate edge_in_label and string_label in the nodes serially down the tree. """
+    """ Unfolds the string in a way that makes it easy to populate edge_in_label and string_label in the nodes serially down the tree. 
+    This function was made to put in the full string in the beginning, but because I want the same function that appends suffixes to
+    automatically put in the full string. """
     #S += null_char # Append null char.
     for _i, i in enumerate(S):
         yield i, S[0:_i+1]
 
 
-tree = tnode('', '')
+tree = trienode('', '') # Initialize the trie.
 
-# Step 1) Add the full string to the trie, to start the building of the suffix tree.
 
 def add_string_to_tree_at_node(node, string):
-    #node = tree
+    """ Helper function that inserts a string, letter for letter - at a specific node. """
     previous_string_label = node.string_label
     for edge_in, string in unfold_string(string):
-        #new_node = tnode(edge_in, string) # string skal ikke være lig string, men være lig en udvidelse af foregående string_label
-        new_node = tnode(edge_in, previous_string_label + edge_in)
-        previous_string_label = string
+        new_node = trienode(edge_in, previous_string_label + edge_in)
+        previous_string_label = previous_string_label + edge_in # or previous_string_label += edge_in
         node.children.append(new_node)
         node = new_node
 
-add_string_to_tree_at_node(tree, S)
 
-# Add all suffixes, one at a time.
-for i in suffixes(S[1:]):
-    #print(i)
-    pass # for later..
+   
+# for suffix in suffixes(S):
+#     print('suffix:', suffix)
+    
+#     char_iter = iter(suffix) # Så jeg kan kalde next
 
-
-# Add a selected suffix
-suffix = 'tata'
-
-if True:
-    for node in tree:
-        print(node)
-        if node.string_label == suffix:
-            print('hooray')
-            add_string_to_tree_at_node(node, '$')
-            break # suffixet eksisterer ikke som en underdel af noget andet, og skal derfor tilføjes fra roden
+#     #char = next(char_iter)
+#     for node in tree:
+#         if next(char_iter) not in [child.in_edge_label for child in node.children]:
+#             # No child exists with an in_edge_label that matches the char we're at.
+#             add_string_to_tree_at_node(node, suffix)
+#             break
+#     break
 
 
 
-# Compact the tree.
+
+def recursive_appender(node, suffix):
+    # if diversion: add string and break.
+    # else: call recursively with next suffix
+    
+    # base case
+    print('suffix:', suffix)
+    if len(suffix) == 0: # base case
+        print('reached the end')
+        return
+    
+    # no child suffices, add string.
+    elif suffix[0] not in [child.in_edge_label for child in node.children]:
+        print(suffix[0], 'from', suffix, 'not in node')
+        add_string_to_tree_at_node(node, suffix)
+        return
+
+    # the part that calls itself.
+    # if a child exists, that overlaps with the first index of the suffix, we can call ourselves rec. and continue.
+    else: 
+        print('else; suffix[0]', suffix[0], 'exists in children')
+        
+        for child in children:
+            pass
 
 
-#tree.children[0].children.append(tnode('in edge content', 'node content'))
+        recursive_appender(node, suffix[1:])
 
 
-tree.visualize_old()
+#for suffix in suffixes(S):
+recursive_appender(tree, S)
+#break # only first suffix, just to get started.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+tree.visualize(True)
+
