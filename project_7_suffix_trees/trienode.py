@@ -1,3 +1,5 @@
+# Author: Carl M. Kobel 2019
+# Description: Nodes for building a trie. Supports visualization with graphviz.
 from graphviz import Digraph
 from itertools import chain
 
@@ -7,6 +9,7 @@ class trienode:
         self.in_edge_label = in_edge_label # The edge into this node. 
         self.string_label = string_label # The sum of upstream in_edge_labels.
         self.children = [i for i in children]
+        #self.indexes = (start, end)
         #self.sibling = 
 
     def __str__(self):
@@ -17,6 +20,9 @@ class trienode:
         yield self
         for node in chain(*map(iter, self.children)):
             yield node
+
+    def __next__(self):
+        yield self
 
 
     def __repr__(self):

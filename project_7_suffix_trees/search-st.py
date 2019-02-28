@@ -1,14 +1,20 @@
 # Title: Search Suffix Tree
+# Description: Builds a suffix tree from a string
 from trienode import trienode
 # Author: Carl M. Kobel
 
 
 null_char = '$' # null character
-S = 'tatat' # tatat, mississippi
+S = 'mississippi' # tatat, mississippi
 S += null_char
 n = len(S)
+DEBUG = not True
 
 
+def dprint(*args, **kwargs): #
+    """ To easily toggle debugprints. """
+    if DEBUG == True:
+        print(*args, **kwargs)
 
 
 
@@ -36,31 +42,30 @@ def recursive_appender(node, suffix):
             node = new_node
     
 
-
+    # Overview of the following three possible cases.
     # 0: String is empty, close
     # 1: Diversion. add string.
     # 2: String matches tree. continue recursively
     
     # 0 Base case.
-    print('suffix:', suffix)
+    dprint('suffix:', suffix)
     if len(suffix) == 0: # base case
-        print('0) reached the end')
-        return
+        dprint('0) reached the end')
+        return 
     
     # 1 No child suffices, add string.
     elif suffix[0:1] not in [child.in_edge_label for child in node.children]:
-        print('1)', suffix[0:1], 'from', suffix, 'not in node, adding...')
+        dprint('1)', suffix[0:1], 'from', suffix, 'not in node, adding...')
         add_string(node, suffix)
         return
 
     # 2 The part that calls itself.
     # if a child exists, that overlaps with the first index of the suffix, we can call ourselves rec. and continue.
     else: 
-        print('2) else; suffix[0:1]', suffix[0:1], 'exists in children,',[i.in_edge_label for i in node.children], ' calling next suffix')
+        dprint('2) else; suffix[0:1]', suffix[0:1], 'exists in children,',[i.in_edge_label for i in node.children], ' calling next suffix')
         for child in node.children:
-            print('hat')
             if suffix[0:1] == child.in_edge_label:
-                print('calling for suffix[1:]:', suffix[1:])
+                dprint('calling for suffix[1:]:', suffix[1:])
                 recursive_appender(child, suffix[1:])
 
 
@@ -72,12 +77,33 @@ def suffixes(S):
 
 for suffix in suffixes(S):
     recursive_appender(tree, suffix)
+    #break # unary tree
+
+# Start med at lave kompaktering.
+# Først vil jeg have et unært træ.
+
+# Skal jeg også lave den rekursiv?
+def compact(node):
+    for node in tree:
+        while(len(node.children) == 1): # Når node har éen child
+            node.in_edge_label = node.children[0].in_edge_label
+            node.string_label += node.children[0].in_edge_label
+            node.children = node.children[0].children
 
 
 
 
-
+compact(tree)
 
 
 tree.visualize(True)
+
+
+
+
+
+
+
+
+
 
