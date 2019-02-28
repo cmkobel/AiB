@@ -18,6 +18,7 @@ class trienode:
         for node in chain(*map(iter, self.children)):
             yield node
 
+
     def __repr__(self):
         return str(self)
 
