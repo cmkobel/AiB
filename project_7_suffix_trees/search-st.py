@@ -1,5 +1,6 @@
 # Title: Search Suffix Tree
-# Description: Builds a suffix tree from a string
+# Description: Builds a suffix tree from a string. Most functions ended up as recursive. 
+
 from trienode import trienode
 # Author: Carl M. Kobel
 
@@ -9,10 +10,9 @@ class suffixtree:
         self.S = S + null_char
         self.null_char = null_char
         
-
         ## Workflow: ##
 
-        # 1) Initialize an root node.
+        # 1) Initialize a root node.
         self.tree = trienode('', '') 
 
         # 2) Add all suffixes to the tree.
@@ -26,6 +26,7 @@ class suffixtree:
         if show:
             self.tree.visualize(True)
 
+
     def __iter__(self):
         return self.tree.__iter__()
 
@@ -33,7 +34,7 @@ class suffixtree:
     def add_string(self, node, string, start_index):
         """ Helper function that inserts a string, letter for letter - at a specific node. """
 
-        def unfold_string(S):
+        def unfold_string(S): # Skal denne funktion ud, den bliver jo defineret gang på gang?
             """ Unfolds the string in a way that makes it easy to populate edge_in_label and string_label in the nodes serially down the tree. """
             for _i, i in enumerate(S):
                 yield i, S[0:_i+1]
@@ -85,7 +86,8 @@ class suffixtree:
 
 
     def find_node(self, p):
-        """ Returns the first match. If no match; returns False"""
+        """ Returns the node where a match has been completed.
+        If no match; returns False"""
         
         def rec_search(node, p):
             """ Returns the index in S where the match is found. """
@@ -114,13 +116,14 @@ class suffixtree:
 
 
     def find_position(self, p):
-
+        """ Returns the first match position. """
         rv = self.find_node(p)
         if rv == False:
             return -1 # evt. ellers kunne man lave en særlig exception.
         else: 
             return rv.start_index
         
+
     def find_positions(self, p):
         """ Returns all matches in a list.
         First, it finds a match nodes. Then it iterates through all children in order to 
@@ -134,15 +137,16 @@ class suffixtree:
 
 
 if __name__ == "__main__":
+
+    ## Light Tests:
+    
     st = suffixtree('Mississippi', show = False)
     #                    ^^^^^
 
-
-
+    print('testing single')
     match = st.find_position('Mississippie')
-    #print(match)
-    #print('down', match.start_index)
-
+    print(match)
+    print()
 
     test_list = ['Mississippi',
              'ississippi',
@@ -160,62 +164,14 @@ if __name__ == "__main__":
              'thoadeunthaoieuhdaoe',
              '$'] # 11
 
-    print('testing...')
+    print('testing single test_list...')
     for i in test_list:
         print(st.find_position(i))
     print('...done testing')
     print()
 
-    print(st.find_positions('is'))
+    print('testing multiple')
+    print(st.find_positions('paoeuh'))
 
 
 
-
-
-
-
-
-
-    # Jeg tror altså bare jeg laver den rekursiv. 
-    
-    if False:
-        def rec_search(node, p):
-            """ Returns the index in S where the match is found. """
-            len_p = len(p)
-            #print('recursive call; p:', p, ', node:', node, ', len_p:', len(p))
-            if len_p == 0: # base case: when an empty string has been asked for, we are done.
-                #print('DONE!')
-                return node
-
-
-            for child in node.children: # for hvert barn
-                #print(' child:', child.in_edge_label) ##print barnet, så vi ved hvor vi er kommet til. 
-
-                len_in_edge = len(child.in_edge_label)
-                lower_bound = min(len_p, len_in_edge)
-                #print('   lower_bound', lower_bound)
-
-                if p[0:lower_bound] == child.in_edge_label[0:lower_bound]:
-        
-                    #print('  match:', p[0:lower_bound], 'in child:', child.in_edge_label)
-                    #print()
-                    return rec_search(child, p[lower_bound:])
-
-
-
-
-        print('match at:', rec_search(st.tree, p))
-        match_node =  rec_search(st.tree, p)
-        for subnode in match_node:
-            print(subnode.start_index)
-
-# problem: positionerne kommer ud i omvendt rækkefølge
-
-#                           v Det der kom ud af første, lavet med plus
-
-
-
-#for i in test_list:
-    #rec_search(st.tree, i).start_index
-    #pass
-# Kan kun give et resultat.
