@@ -12,7 +12,7 @@ class suffixtree:
         
         ## Workflow: ##
 
-        # 1) Initialize a root node.
+        # 1) Initialize the root node.
         self.tree = trienode('', '') 
 
         # 2) Add all suffixes to the tree.
@@ -55,7 +55,6 @@ class suffixtree:
         # 2: String matches tree. continue recursively
         
         # 0 Base case.
-
         if len(suffix) == 0: # base case
             return
         
@@ -64,7 +63,7 @@ class suffixtree:
             self.add_string(node, suffix, start_index)
             return
 
-        # 2 The part that calls itself.
+        # 2 The part that calls itself with a successively shorter string.
         else: 
             for child in node.children:
                 if suffix[0:1] == child.in_edge_label:
@@ -101,8 +100,8 @@ class suffixtree:
             for child in node.children: # for hvert barn
                 #print(' child:', child.in_edge_label) ##print barnet, så vi ved hvor vi er kommet til. 
 
-                len_in_edge = len(child.in_edge_label)
-                lower_bound = min(len_p, len_in_edge)
+                #len_in_edge = len(child.in_edge_label)
+                lower_bound = min(len_p, len(child.in_edge_label))
                 #print('   lower_bound', lower_bound)
 
                 if p[0:lower_bound] == child.in_edge_label[0:lower_bound]:
@@ -119,7 +118,7 @@ class suffixtree:
         """ Returns the first match position. """
         rv = self.find_node(p)
         if rv == False:
-            return -1 # evt. ellers kunne man lave en særlig exception.
+            return -1 # evt. ellers kunne man lave en særlig exception. Sikkert langsommere, men mere logisk.
         else: 
             return rv.start_index
         
@@ -158,11 +157,15 @@ if __name__ == "__main__":
              'ippi',
              'ppi',
              'pi',
-             'i', 
+             'i',
+             'is', 
              'Mississippie',
+             'Mississippe',
              'havemad',
              'thoadeunthaoieuhdaoe',
-             '$'] # 11
+             '$', # 11
+             '$$',
+             'Mis$'] # ?
 
     print('testing single test_list...')
     for i in test_list:
@@ -171,7 +174,7 @@ if __name__ == "__main__":
     print()
 
     print('testing multiple')
-    print(st.find_positions('paoeuh'))
+    print(st.find_positions('issi'))
 
 
 
