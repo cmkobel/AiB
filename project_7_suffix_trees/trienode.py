@@ -1,6 +1,6 @@
 # Author: Carl M. Kobel 2019
 # Description: Nodes for building a trie. Supports visualization with graphviz.
-#from graphviz import Digraph
+from graphviz import Digraph
 from itertools import chain
 
 class trienode:
@@ -10,7 +10,6 @@ class trienode:
         self.string_label = string_label # The sum of upstream in_edge_labels.
         self.children = [i for i in children]
         self.start_index = start_index # the position in S where this string_label occurs. -1 for not given.
-        #self.indexes = (start, end)
         #self.sibling = 
 
     def __str__(self):
