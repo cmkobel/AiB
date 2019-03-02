@@ -16,8 +16,8 @@ class suffixtree:
         self.tree = trienode('', '') 
 
         # 2) Add all suffixes to the tree.
-        for suffix in self.suffixes(self.S):
-            self.recursively_append(self.tree, suffix)
+        for _i, suffix in enumerate(self.suffixes(self.S)):
+            self.recursively_append(self.tree, suffix, _i)
 
         # 3)
         self.compact(self.tree)
@@ -30,7 +30,7 @@ class suffixtree:
         return self.tree.__iter__()
 
 
-    def add_string(self, node, string):
+    def add_string(self, node, string, start_index):
         """ Helper function that inserts a string, letter for letter - at a specific node. """
 
         def unfold_string(S):
@@ -40,13 +40,13 @@ class suffixtree:
 
         previous_string_label = node.string_label
         for edge_in, string in unfold_string(string):
-            new_node = trienode(edge_in, previous_string_label + edge_in)
+            new_node = trienode(edge_in, previous_string_label + edge_in, start_index = start_index)
             previous_string_label += edge_in
             node.children.append(new_node)
             node = new_node
 
 
-    def recursively_append(self, node, suffix):
+    def recursively_append(self, node, suffix, start_index):
 
         # Overview of the following three possible cases:
         # 0: String is empty, close
@@ -60,14 +60,14 @@ class suffixtree:
         
         # 1 No child suffices, add string.
         elif suffix[0:1] not in [child.in_edge_label for child in node.children]:
-            self.add_string(node, suffix)
+            self.add_string(node, suffix, start_index)
             return
 
         # 2 The part that calls itself.
         else: 
             for child in node.children:
                 if suffix[0:1] == child.in_edge_label:
-                    self.recursively_append(child, suffix[1:])
+                    self.recursively_append(child, suffix[1:], start_index) # recursively call yourself.
 
 
     def suffixes(self, S):
@@ -84,27 +84,138 @@ class suffixtree:
                 node.children = node.children[0].children
 
 
+    def find_node(self, p):
+        """ Returns the first match. If no match; returns False"""
+        
+        def rec_search(node, p):
+            """ Returns the index in S where the match is found. """
+            len_p = len(p)
+            #print('recursive call; p:', p, ', node:', node, ', len_p:', len(p))
+            if len_p == 0: # base case: when an empty string has been asked for, we are done.
+                #print('DONE!')
+                return node
+
+
+            for child in node.children: # for hvert barn
+                #print(' child:', child.in_edge_label) ##print barnet, så vi ved hvor vi er kommet til. 
+
+                len_in_edge = len(child.in_edge_label)
+                lower_bound = min(len_p, len_in_edge)
+                #print('   lower_bound', lower_bound)
+
+                if p[0:lower_bound] == child.in_edge_label[0:lower_bound]:
+        
+                    #print('  match:', p[0:lower_bound], 'in child:', child.in_edge_label)
+                    #print()
+                    return rec_search(child, p[lower_bound:])
+            return False
+
+        return rec_search(self.tree, p)
+
+
+    def find_position(self, p):
+
+        rv = self.find_node(p)
+        if rv == False:
+            return -1 # evt. ellers kunne man lave en særlig exception.
+        else: 
+            return rv.start_index
+        
+    def find_positions(self, p):
+        """ Returns all matches in a list.
+        First, it finds a match nodes. Then it iterates through all children in order to 
+        obtain all positions. """
+        match_node = self.find_node(p)
+        if match_node == False:
+            return []
+        else: # solutions exist:
+            return list(set([subnode.start_index for subnode in match_node])) # try .children??? !!!Jeg kan ikke gennemskue om det er vigtigt at alle children kommer med.
+
+
 
 if __name__ == "__main__":
-    st = suffixtree('Mississippi', show = True)
+    st = suffixtree('Mississippi', show = False)
     #                    ^^^^^
 
-    p = 'issip'
 
-    # Jeg tror altså bare jeg laver den rekursiv
+
+    match = st.find_position('Mississippie')
+    #print(match)
+    #print('down', match.start_index)
+
+
+    test_list = ['Mississippi',
+             'ississippi',
+             'ssissippi',
+             'sissippi',
+             'issippi',
+             'ssippi',
+             'sippi',
+             'ippi',
+             'ppi',
+             'pi',
+             'i', 
+             'Mississippie',
+             'havemad',
+             'thoadeunthaoieuhdaoe',
+             '$'] # 11
+
+    print('testing...')
+    for i in test_list:
+        print(st.find_position(i))
+    print('...done testing')
+    print()
+
+    print(st.find_positions('is'))
+
+
+
+
+
+
+
+
+
+    # Jeg tror altså bare jeg laver den rekursiv. 
     
-    def rec_search(node, p):
-        print('recursive call; p:', p, ',node:', node)
-        if len(p) == 0:
-            return node
-
-        for child in node.children:
-            print(' child:', child.in_edge_label)
-            if p[0:len(child.in_edge_label)] == child.in_edge_label:
-                print('  match:', p[0:len(child.in_edge_label)], 'in child:', child.in_edge_label)
-                print()
-                rec_search(child, p[len(child.in_edge_label):])
+    if False:
+        def rec_search(node, p):
+            """ Returns the index in S where the match is found. """
+            len_p = len(p)
+            #print('recursive call; p:', p, ', node:', node, ', len_p:', len(p))
+            if len_p == 0: # base case: when an empty string has been asked for, we are done.
+                #print('DONE!')
+                return node
 
 
+            for child in node.children: # for hvert barn
+                #print(' child:', child.in_edge_label) ##print barnet, så vi ved hvor vi er kommet til. 
 
-    rec_search(st.tree, p)
+                len_in_edge = len(child.in_edge_label)
+                lower_bound = min(len_p, len_in_edge)
+                #print('   lower_bound', lower_bound)
+
+                if p[0:lower_bound] == child.in_edge_label[0:lower_bound]:
+        
+                    #print('  match:', p[0:lower_bound], 'in child:', child.in_edge_label)
+                    #print()
+                    return rec_search(child, p[lower_bound:])
+
+
+
+
+        print('match at:', rec_search(st.tree, p))
+        match_node =  rec_search(st.tree, p)
+        for subnode in match_node:
+            print(subnode.start_index)
+
+# problem: positionerne kommer ud i omvendt rækkefølge
+
+#                           v Det der kom ud af første, lavet med plus
+
+
+
+#for i in test_list:
+    #rec_search(st.tree, i).start_index
+    #pass
+# Kan kun give et resultat.
