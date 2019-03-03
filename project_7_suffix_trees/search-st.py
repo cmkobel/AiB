@@ -14,8 +14,9 @@ for genome in parse_fasta('data/seqs.fasta'):
 
             print(f"\
 {read['sequence']}\t\
-0\t{genome['title']}\t\
-{match}\t\
+0\t\
+{genome['title']}\t\
+{match+1}\t\
 0\t\
 {len(read['sequence'])}M\t\
 *\t\
