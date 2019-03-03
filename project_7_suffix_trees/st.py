@@ -24,7 +24,7 @@ class suffixtree:
 
         # 4)
         if show:
-            self.tree.visualize(True)
+            self.tree.visualize()
 
 
     def __iter__(self):

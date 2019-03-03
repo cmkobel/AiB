@@ -29,12 +29,13 @@ class trienode:
         return str(self)
 
 
-    def visualize(self, open = False):
+    def visualize(self):
         """ Draws a graph with graphviz. 
 
         Builds a tree in the gv-format and exports it to a pdf-file."""
 
         dot = Digraph(comment = 'Suffix tree')
+        #dot.engine = 'circo'
 
         def node_format(node):
             """ Helper function to format the content of the nodes. """
@@ -55,4 +56,4 @@ class trienode:
 
         accept_node(self)
 
-        dot.render('test-output/suffix tree.gv', view = open)
+        dot.render('test-output/suffix tree.gv')

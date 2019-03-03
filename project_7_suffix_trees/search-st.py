@@ -1,12 +1,14 @@
 from st import suffixtree
 from parsers import parse_fasta, parse_fastq
-#import sys # for argv
+import sys
 
 
+genome_file = sys.argv[1]
+reads_file = sys.argv[2]
 
-for genome in parse_fasta('data/seqs.fasta'):
+for genome in parse_fasta(genome_file):
     
-    for read in parse_fastq('data/reads.fastq'):
+    for read in parse_fastq(reads_file):
 
         st = suffixtree(genome['sequence'])
 
